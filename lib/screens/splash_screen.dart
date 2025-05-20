@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pphonedex/components/custom_bottom_bar.dart';
+import 'package:pphonedex/components/bottombar.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);

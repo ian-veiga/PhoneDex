@@ -9,7 +9,12 @@ class CustomBottomBar extends StatelessWidget {
       height: 60,
       decoration: const BoxDecoration(
         color: Colors.red,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
+        border: Border(
+          right: BorderSide(color: Colors.black, width: 2),
+          top: BorderSide(color: Colors.black, width: 2),
+          bottom: BorderSide(color: Colors.black, width: 2),
+          left: BorderSide(color: Colors.black, width: 2),
+        ),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,

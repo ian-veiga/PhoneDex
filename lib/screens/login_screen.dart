@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pphonedex/components/custom_bottom_bar.dart';
+import 'package:pphonedex/components/bottombar.dart';
 
 
 class LoginScreen extends StatefulWidget {
@@ -76,6 +76,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           if (_formKey.currentState!.validate()) {
                             // login
                           }
+                           Navigator.pushNamed(context, '/home');
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blueGrey[800],

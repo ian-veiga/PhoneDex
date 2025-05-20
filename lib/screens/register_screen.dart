@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pphonedex/components/custom_bottom_bar.dart';
+import 'package:pphonedex/components/bottombar.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({Key? key}) : super(key: key);
@@ -119,6 +119,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             if (_formKey.currentState!.validate()) {
                               // cadastro
                             }
+                             Navigator.pushNamed(context, '/home');
+
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blueGrey[800],
