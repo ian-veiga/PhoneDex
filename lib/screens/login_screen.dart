@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pphonedex/components/bottombar.dart';
 
-
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
 
@@ -15,12 +14,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Captura o tamanho da tela
     final screenSize = MediaQuery.of(context).size;
-    // Define um tamanho relativo (por ex. 25% da largura)
-    final logoWidth  = screenSize.width * 0.5;
-    final logoHeight = logoWidth; // mantém quadrado
+    final logoWidth = screenSize.width * 0.5;
+    final logoHeight = logoWidth;
+
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Stack(
         children: [
           Padding(
@@ -28,13 +27,12 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               children: [
                 const SizedBox(height: 60),
-                  Image.asset(
+                Image.asset(
                   'assets/images/logo_com_nome.png',
                   width: logoWidth,
-                  height: logoHeight ,
+                  height: logoHeight,
                 ),
-                  const SizedBox(height: 16),
-                  
+                const SizedBox(height: 16),
                 Form(
                   key: _formKey,
                   child: Column(
@@ -54,13 +52,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         obscureText: _hidePassword,
                         decoration: InputDecoration(
                           labelText: 'Senha',
-                          prefixIcon: Icon(_hidePassword
-                              ? Icons.visibility_off
-                              : Icons.visibility),
+                          prefixIcon: Icon(
+                            _hidePassword ? Icons.visibility_off : Icons.visibility,
+                          ),
                           suffixIcon: IconButton(
-                            icon: Icon(_hidePassword
-                                ? Icons.lock
-                                : Icons.lock_open),
+                            icon: Icon(_hidePassword ? Icons.lock : Icons.lock_open),
                             onPressed: () {
                               setState(() => _hidePassword = !_hidePassword);
                             },
@@ -76,7 +72,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           if (_formKey.currentState!.validate()) {
                             // login
                           }
-                           Navigator.pushNamed(context, '/home');
+                          Navigator.pushNamed(context, '/home');
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blueGrey[800],
@@ -85,7 +81,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           padding: const EdgeInsets.symmetric(vertical: 16.0),
                         ),
-                        child: const Text('ENTRAR',
+                        child: const Text(
+                          'ENTRAR',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 16,
@@ -94,21 +91,23 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      Center(child: TextButton(
-                        onPressed: () => Navigator.pushNamed(context, '/register'),
-                        child: const Text('OU',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
+                      Center(
+                        child: TextButton(
+                          onPressed: () => Navigator.pushNamed(context, '/register'),
+                          child: const Text(
+                            'OU',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
-                        )
-                        
-                      )),
+                        ),
+                      ),
                       const SizedBox(height: 32),
                       ElevatedButton(
                         onPressed: () {
-                           Navigator.pushNamed(context, '/register');
+                          Navigator.pushNamed(context, '/register');
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blueGrey[800],
@@ -117,7 +116,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           padding: const EdgeInsets.symmetric(vertical: 16.0),
                         ),
-                        child: const Text('CADASTRE-SE',
+                        child: const Text(
+                          'CADASTRE-SE',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 16,
@@ -126,7 +126,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ],
-                    
                   ),
                 ),
                 const Spacer(flex: 3),

@@ -15,12 +15,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Captura o tamanho da tela
-  final screenSize = MediaQuery.of(context).size;
-  // Define um tamanho relativo (por ex. 25% da largura)
-  final logoWidth  = screenSize.width * 0.5;
-  final logoHeight = logoWidth; // mantém quadrado
+    final screenSize = MediaQuery.of(context).size;
+    final logoWidth = screenSize.width * 0.5;
+    final logoHeight = logoWidth;
+
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Stack(
         children: [
           Padding(
@@ -30,10 +30,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 children: [
                   const SizedBox(height: 60),
                   Image.asset(
-                  'assets/images/logo_com_nome.png',
-                  width:logoWidth,
-                  height: logoHeight,
-                ),
+                    'assets/images/logo_com_nome.png',
+                    width: logoWidth,
+                    height: logoHeight,
+                  ),
                   const SizedBox(height: 16),
                   Form(
                     key: _formKey,
@@ -66,13 +66,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           obscureText: _hidePassword,
                           decoration: InputDecoration(
                             labelText: 'Senha',
-                            prefixIcon: Icon(_hidePassword
-                                ? Icons.visibility_off
-                                : Icons.visibility),
+                            prefixIcon: Icon(
+                              _hidePassword ? Icons.visibility_off : Icons.visibility,
+                            ),
                             suffixIcon: IconButton(
-                              icon: Icon(_hidePassword
-                                  ? Icons.lock
-                                  : Icons.lock_open),
+                              icon: Icon(_hidePassword ? Icons.lock : Icons.lock_open),
                               onPressed: () {
                                 setState(() => _hidePassword = !_hidePassword);
                               },
@@ -97,13 +95,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           obscureText: _hideConfirm,
                           decoration: InputDecoration(
                             labelText: 'Confirmar Senha',
-                            prefixIcon: Icon(_hideConfirm
-                                ? Icons.visibility_off
-                                : Icons.visibility),
+                            prefixIcon: Icon(
+                              _hideConfirm ? Icons.visibility_off : Icons.visibility,
+                            ),
                             suffixIcon: IconButton(
-                              icon: Icon(_hideConfirm
-                                  ? Icons.lock
-                                  : Icons.lock_open),
+                              icon: Icon(_hideConfirm ? Icons.lock : Icons.lock_open),
                               onPressed: () {
                                 setState(() => _hideConfirm = !_hideConfirm);
                               },
@@ -119,8 +115,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             if (_formKey.currentState!.validate()) {
                               // cadastro
                             }
-                             Navigator.pushNamed(context, '/home');
-
+                            Navigator.pushNamed(context, '/home');
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blueGrey[800],
@@ -129,7 +124,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ),
                             padding: const EdgeInsets.symmetric(vertical: 16.0),
                           ),
-                          child: const Text('CADASTRA-SE',
+                          child: const Text(
+                            'CADASTRA-SE',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 16,
