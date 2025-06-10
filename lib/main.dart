@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:pphonedex/screens/register_screen.dart';
 import 'package:pphonedex/screens/splash_screen.dart';
-import 'package:pphonedex/components/bottombar.dart';
 import 'package:pphonedex/screens/login_screen.dart';
 import 'package:pphonedex/screens/home_screen.dart';
-
+import 'package:pphonedex/screens/phone_detail_screen.dart'; // ⬅️ ADICIONAR ISSO
 
 void main() {
   runApp(const PhoneDexApp());
@@ -27,14 +26,8 @@ class PhoneDexApp extends StatelessWidget {
         '/login': (_) => const LoginScreen(),
         '/register': (_) => const RegisterScreen(),
         '/home': (_) => const HomeScreen(),
+        '/details': (_) => const PhoneDetailScreen(), // ⬅️ NOVA ROTA
       },
     );
   }
 }
-
-
-
-
-
-
-
