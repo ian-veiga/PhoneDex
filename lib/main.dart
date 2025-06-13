@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pphonedex/screens/register_screen.dart';
 import 'package:pphonedex/screens/splash_screen.dart';
-import 'package:pphonedex/components/bottombar.dart';
 import 'package:pphonedex/screens/login_screen.dart';
 import 'package:pphonedex/screens/home_screen.dart';
 
