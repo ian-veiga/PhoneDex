@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pphonedex/components/bottombar.dart';
+import 'package:pphonedex/services/auth_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({Key? key}) : super(key: key);
@@ -10,8 +11,39 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final AuthService _authService = AuthService();
+
+  bool _loading = false;
   bool _hidePassword = true;
   bool _hideConfirm = true;
+  String? _error;
+
+  void _register() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final user = await _authService.register(
+        _emailController.text.trim(),
+        _passwordController.text.trim(),
+      );
+      if (user != null) {
+        // Registro bem-sucedido, navegue para a próxima tela
+        Navigator.of(context).pushReplacementNamed('/login');
+      }
+    } catch (e) {
+      setState(() {
+        _error = 'Erro ao registrar: ${e.toString()}';
+      });
+    } finally {
+      setState(() {
+        _loading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,17 +76,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             TextFormField(
-                              decoration: const InputDecoration(
-                                labelText: 'Usuário',
-                                prefixIcon: Icon(Icons.person),
-                                border: UnderlineInputBorder(),
-                              ),
-                              validator: (val) =>
-                                  val == null || val.isEmpty ? 'Informe seu usuário' : null,
-                            ),
-                            const SizedBox(height: 16),
-                            TextFormField(
-                              keyboardType: TextInputType.emailAddress,
+                              controller: _emailController,
                               decoration: const InputDecoration(
                                 labelText: 'E-mail',
                                 prefixIcon: Icon(Icons.email),
@@ -66,6 +88,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ),
                             const SizedBox(height: 16),
                             TextFormField(
+                              controller: _passwordController,
                               obscureText: _hidePassword,
                               decoration: InputDecoration(
                                 labelText: 'Senha',
@@ -112,29 +135,34 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               validator: (val) =>
                                   val == null || val.isEmpty ? 'Confirme a senha' : null,
                             ),
-                            const SizedBox(height: 32),
-                            ElevatedButton(
-                              onPressed: () {
-                                if (_formKey.currentState!.validate()) {
-                                  Navigator.pushNamed(context, '/home');
-                                }
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blueGrey[800],
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(24),
-                                ),
-                                padding: const EdgeInsets.symmetric(vertical: 16.0),
-                              ),
-                              child: const Text(
-                                'CADASTRA-SE',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
+                            const SizedBox(height: 16),
+                            if (_error != null)
+                              Text(_error!, style: TextStyle(color: Colors.red)),
+                            const SizedBox(height: 16),
+                            _loading
+                                ? CircularProgressIndicator()
+                                : ElevatedButton(
+                                    onPressed: () {
+                                      if (_formKey.currentState!.validate()) {
+                                        _register();
+                                      }
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.blueGrey[800],
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(24),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                                    ),
+                                    child: const Text(
+                                      'CADASTRA-SE',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
                           ],
                         ),
                       ),

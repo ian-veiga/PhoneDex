@@ -3,9 +3,13 @@ import 'package:pphonedex/screens/register_screen.dart';
 import 'package:pphonedex/screens/splash_screen.dart';
 import 'package:pphonedex/screens/login_screen.dart';
 import 'package:pphonedex/screens/home_screen.dart';
-import 'package:pphonedex/screens/phone_detail_screen.dart'; // ⬅️ ADICIONAR ISSO
+import 'package:pphonedex/screens/phone_detail_screen.dart';
+import '/core/firebase_config.dart';
 
-void main() {
+
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  await FirebaseConfig.init();
   runApp(const PhoneDexApp());
 }
 
