@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:pphonedex/components/bottombar.dart';
+import 'package:pphonedex/services/auth_service.dart';
+
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
-
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
@@ -11,6 +12,19 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _hidePassword = true;
+
+  // Adicione controladores para os campos de email e senha
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  final AuthService _authService = AuthService(); // Instância correta
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,6 +56,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           TextFormField(
+                            controller: emailController, // Adicionado
                             decoration: const InputDecoration(
                               labelText: 'Usuário',
                               prefixIcon: Icon(Icons.person),
@@ -52,6 +67,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           const SizedBox(height: 16),
                           TextFormField(
+                            controller: passwordController, // Adicionado
                             obscureText: _hidePassword,
                             decoration: InputDecoration(
                               labelText: 'Senha',
@@ -71,9 +87,24 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           const SizedBox(height: 32),
                           ElevatedButton(
-                            onPressed: () {
+                            onPressed: () async {
                               if (_formKey.currentState!.validate()) {
-                                Navigator.pushNamed(context, '/home');
+                                try {
+                                    await _authService.login(
+                                    emailController.text.trim(),
+                                    passwordController.text.trim(),
+                                  );
+                                  Navigator.pushReplacementNamed(context, '/home');
+                                } catch (e) {
+                                  // Se falhar, mostra mensagem de erro
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'Usuário ou senha inválidos, ou usuário não cadastrado.',
+                                      ),
+                                    ),
+                                  );
+                                }
                               }
                             },
                             style: ElevatedButton.styleFrom(
@@ -95,7 +126,19 @@ class _LoginScreenState extends State<LoginScreen> {
                           const SizedBox(height: 16),
                           Center(
                             child: TextButton(
-                              onPressed: () => Navigator.pushNamed(context, '/register'),
+                              onPressed: () async{
+                             if (_formKey.currentState!.validate()) {
+                              try {
+                                await AuthService().login(emailController.text, passwordController.text);
+                                Navigator.pushReplacementNamed(context, '/home');
+                              } catch (e) {
+                                // Handle login errors
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(e.toString())),
+                                );
+                              }
+                            }
+                          },
                               child: const Text(
                                 'OU',
                                 style: TextStyle(
@@ -108,9 +151,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           const SizedBox(height: 32),
                           ElevatedButton(
-                            onPressed: () {
-                              Navigator.pushNamed(context, '/register');
-                            },
+                            onPressed: () => Navigator.pushNamed(context, '/register'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.blueGrey[800],
                               shape: RoundedRectangleBorder(
