@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pphonedex/components/bottombar.dart';
 import 'package:pphonedex/components/sidebar.dart';
 import 'package:pphonedex/components/topbar.dart';
+import 'add_phone_screen.dart'; // Importe a tela de adicionar
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -95,6 +96,16 @@ class HomeScreen extends StatelessWidget {
           ),
           const CustomBottomBar(),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => AddPhoneScreen()),
+          );
+        },
+        child: const Icon(Icons.add),
+        tooltip: 'Adicionar Celular',
       ),
     );
   }
