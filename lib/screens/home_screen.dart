@@ -1,8 +1,11 @@
+// lib/screens/home_screen.dart
 import 'package:flutter/material.dart';
 import 'package:pphonedex/components/bottombar.dart';
 import 'package:pphonedex/components/sidebar.dart';
 import 'package:pphonedex/components/topbar.dart';
-import 'add_phone_screen.dart'; // Importe a tela de adicionar
+import 'package:pphonedex/screens/add_phone_screen.dart';
+import 'package:pphonedex/services/phone_service.dart'; // Importe o serviço de telefone
+import 'package:pphonedex/models/phone_model.dart'; // Importe o modelo de telefone
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -39,52 +42,48 @@ class HomeScreen extends StatelessWidget {
                                   ),
                                 ],
                               ),
-                              child: Column(
-                                children: [
-                                  Expanded(
-                                    child: GridView.builder(
-                                      gridDelegate:
-                                          const SliverGridDelegateWithFixedCrossAxisCount(
-                                        crossAxisCount: 3,
-                                        crossAxisSpacing: 16,
-                                        mainAxisSpacing: 16,
-                                        childAspectRatio: 0.8,
-                                      ),
-                                      itemCount: 12,
-                                      itemBuilder: (context, index) {
-                                        if (index == 0) {
-                                          return buildPhoneCard(
-                                            "IPHONE 15",
-                                            'https://images.unsplash.com/photo-1696530429439-b3436906480b',
-                                            context,
-                                          );
-                                        } else if (index == 1) {
-                                          return buildPhoneCard(
-                                            "IPHONE 16",
-                                            'https://images.unsplash.com/photo-1695669602536-9b0b8ae8a3d2',
-                                            context,
-                                          );
-                                        } else {
-                                          return Container(
-                                            decoration: BoxDecoration(
-                                              color: Colors.grey.shade800,
-                                              borderRadius:
-                                                  BorderRadius.circular(12),
-                                            ),
-                                          );
-                                        }
-                                      },
+                              child: StreamBuilder<List<Phone>>( // Use StreamBuilder
+                                stream: PhoneService().getPhones(), // Busque o stream de telefones
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState == ConnectionState.waiting) {
+                                    return const Center(child: CircularProgressIndicator());
+                                  }
+                                  if (snapshot.hasError) {
+                                    return Center(child: Text('Erro: ${snapshot.error}'));
+                                  }
+                                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                                    return const Center(child: Text('Nenhum celular cadastrado.'));
+                                  }
+
+                                  final phones = snapshot.data!;
+                                  return GridView.builder(
+                                    gridDelegate:
+                                        const SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: 3,
+                                      crossAxisSpacing: 16,
+                                      mainAxisSpacing: 16,
+                                      childAspectRatio: 0.8,
                                     ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  const Icon(
-                                    Icons.keyboard_arrow_down,
-                                    size: 28,
-                                    color: Colors.black54,
-                                  ),
-                                ],
+                                    itemCount: phones.length, // O número de itens é o tamanho da lista de celulares
+                                    itemBuilder: (context, index) {
+                                      final phone = phones[index];
+                                      return buildPhoneCard(
+                                        phone.name,
+                                        phone.imageUrl,
+                                        phone.id, // Passe o ID do celular
+                                        context,
+                                      );
+                                    },
+                                  );
+                                },
                               ),
                             ),
+                          ),
+                          const SizedBox(height: 8),
+                          const Icon(
+                            Icons.keyboard_arrow_down,
+                            size: 28,
+                            color: Colors.black54,
                           ),
                         ],
                       ),
@@ -110,15 +109,15 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget buildPhoneCard(String name, String imageUrl, BuildContext context) {
+  Widget buildPhoneCard(
+      String name, String imageUrl, String phoneId, BuildContext context) {
     return GestureDetector(
       onTap: () {
         Navigator.pushNamed(
           context,
           '/details',
           arguments: {
-            'phoneName': name,
-            'imageUrl': imageUrl,
+            'docId': phoneId, // Passa o ID do documento
           },
         );
       },
