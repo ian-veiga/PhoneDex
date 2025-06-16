@@ -5,6 +5,8 @@ import 'package:pphonedex/screens/login_screen.dart';
 import 'package:pphonedex/screens/home_screen.dart';
 import 'package:pphonedex/screens/phone_detail_screen.dart';
 import '/core/firebase_config.dart';
+import 'package:pphonedex/screens/add_phone_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 
 void main() async{
@@ -30,7 +32,8 @@ class PhoneDexApp extends StatelessWidget {
         '/login': (_) => const LoginScreen(),
         '/register': (_) => const RegisterScreen(),
         '/home': (_) => const HomeScreen(),
-        '/details': (_) => const PhoneDetailScreen(), // ⬅️ NOVA ROTA
+        '/details': (_) => const PhoneDetailScreen(),
+        '/add_phone': (_) => AddPhoneScreen(), // ⬅️ NOVA ROTA
       },
     );
   }
