@@ -3,9 +3,15 @@ import 'package:pphonedex/screens/register_screen.dart';
 import 'package:pphonedex/screens/splash_screen.dart';
 import 'package:pphonedex/screens/login_screen.dart';
 import 'package:pphonedex/screens/home_screen.dart';
-import 'package:pphonedex/screens/phone_detail_screen.dart'; // ⬅️ ADICIONAR ISSO
+import 'package:pphonedex/screens/phone_detail_screen.dart';
+import '/core/firebase_config.dart';
+import 'package:pphonedex/screens/add_phone_screen.dart';
+import 'package:pphonedex/screens/SelectOpponentScreen.dart';
+import 'package:firebase_core/firebase_core.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await FirebaseConfig.init();
   runApp(const PhoneDexApp());
 }
 
@@ -26,7 +32,14 @@ class PhoneDexApp extends StatelessWidget {
         '/login': (_) => const LoginScreen(),
         '/register': (_) => const RegisterScreen(),
         '/home': (_) => const HomeScreen(),
-        '/details': (_) => const PhoneDetailScreen(), // ⬅️ NOVA ROTA
+        '/details': (_) => const PhoneDetailScreen(),
+        '/add_phone': (_) => AddPhoneScreen(),
+
+        // ✅ ROTA PARA A TELA DE SELEÇÃO DE OPONENTE (com argumento)
+        '/selectForVs': (context) {
+          final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+          return SelectOpponentScreen(firstPhoneId: args['firstPhoneId']);
+        },
       },
     );
   }

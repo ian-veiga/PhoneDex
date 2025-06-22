@@ -1,115 +1,206 @@
 import 'package:flutter/material.dart';
-import 'package:pphonedex/components/bottombar.dart';
-import 'package:pphonedex/components/sidebar.dart';
-import 'package:pphonedex/components/topbar.dart';
+import 'package:pphonedex/screens/add_phone_screen.dart';
+import 'package:pphonedex/services/phone_service.dart';
+import 'package:pphonedex/models/phone_model.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  String selectedOS = 'Todos';
+  String searchQuery = '';
+  int currentIndex = 0;
+
+  void handleFilterSelected(String value) {
+    setState(() {
+      selectedOS = value;
+    });
+  }
+
+  void handleSearchChanged(String value) {
+    setState(() {
+      searchQuery = value.toLowerCase();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey,
+      backgroundColor: Colors.grey.shade100,
+      appBar: AppBar(
+        backgroundColor: const Color.fromARGB(255, 173, 76, 76),
+        elevation: 1,
+        centerTitle: true,
+        title: Image.asset(
+          'assets/images/nomelogo.png',
+          height: 40, // ⬅️ Ajuste a altura da logo como quiser
+        ),
+      ),
       body: Column(
         children: [
-          const TopBar(),
+          buildTopBar(),
           Expanded(
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 1000),
-                child: Row(
-                  children: [
-                    const SideBar(),
-                    Expanded(
-                      child: Column(
-                        children: [
-                          Expanded(
-                            child: Container(
-                              margin: const EdgeInsets.all(16),
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.2),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: Column(
-                                children: [
-                                  Expanded(
-                                    child: GridView.builder(
-                                      gridDelegate:
-                                          const SliverGridDelegateWithFixedCrossAxisCount(
-                                        crossAxisCount: 3,
-                                        crossAxisSpacing: 16,
-                                        mainAxisSpacing: 16,
-                                        childAspectRatio: 0.8,
-                                      ),
-                                      itemCount: 12,
-                                      itemBuilder: (context, index) {
-                                        if (index == 0) {
-                                          return buildPhoneCard(
-                                            "IPHONE 15",
-                                            'https://images.unsplash.com/photo-1696530429439-b3436906480b',
-                                            context,
-                                          );
-                                        } else if (index == 1) {
-                                          return buildPhoneCard(
-                                            "IPHONE 16",
-                                            'https://images.unsplash.com/photo-1695669602536-9b0b8ae8a3d2',
-                                            context,
-                                          );
-                                        } else {
-                                          return Container(
-                                            decoration: BoxDecoration(
-                                              color: Colors.grey.shade800,
-                                              borderRadius:
-                                                  BorderRadius.circular(12),
-                                            ),
-                                          );
-                                        }
-                                      },
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  const Icon(
-                                    Icons.keyboard_arrow_down,
-                                    size: 28,
-                                    color: Colors.black54,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: StreamBuilder<List<Phone>>(
+                stream: PhoneService().getPhones(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (snapshot.hasError) {
+                    return Center(child: Text('Erro: ${snapshot.error}'));
+                  }
+                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(child: Text('Nenhum celular cadastrado.'));
+                  }
+
+                  final phones = snapshot.data!.where((phone) {
+                    final nameLower = phone.name.toLowerCase();
+                    final isIOS = phone.name.toLowerCase().contains('iphone');
+
+                    final soMatch = selectedOS == 'Todos' ||
+                        (selectedOS == 'iOS' && isIOS) ||
+                        (selectedOS == 'Android' && !isIOS);
+
+                    final searchMatch = searchQuery.isEmpty || nameLower.contains(searchQuery);
+
+                    return soMatch && searchMatch;
+                  }).toList();
+
+                  return GridView.builder(
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      crossAxisSpacing: 8,
+                      mainAxisSpacing: 8,
+                      childAspectRatio: 0.7,
                     ),
-                  ],
+                    itemCount: phones.length,
+                    itemBuilder: (context, index) {
+                      final phone = phones[index];
+                      return buildPhoneCard(phone.name, phone.imageUrl, phone.id, context);
+                    },
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(context, MaterialPageRoute(builder: (_) => AddPhoneScreen()));
+        },
+        child: const Icon(Icons.add),
+        tooltip: 'Adicionar Celular',
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: BottomAppBar(
+        shape: const CircularNotchedRectangle(),
+        notchMargin: 6,
+        color: Colors.white,
+        child: SizedBox(
+          height: 60,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              IconButton(
+                icon: Icon(
+                  Icons.home,
+                  color: currentIndex == 0 ? Colors.red : Colors.grey,
+                ),
+                onPressed: () {
+                  setState(() {
+                    currentIndex = 0;
+                  });
+                },
+              ),
+              IconButton(
+                icon: Icon(
+                  Icons.favorite,
+                  color: currentIndex == 1 ? Colors.red : Colors.grey,
+                ),
+                onPressed: () {
+                  setState(() {
+                    currentIndex = 1;
+                  });
+                },
+              ),
+              const SizedBox(width: 40), // Espaço central para o FAB
+              IconButton(
+                icon: Icon(
+                  Icons.person,
+                  color: currentIndex == 2 ? Colors.red : Colors.grey,
+                ),
+                onPressed: () {
+                  setState(() {
+                    currentIndex = 2;
+                  });
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildTopBar() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Row(
+        children: [
+          Expanded(
+            child: DropdownButton<String>(
+              value: selectedOS,
+              onChanged: (value) {
+                if (value != null) {
+                  handleFilterSelected(value);
+                }
+              },
+              items: const [
+                DropdownMenuItem(value: 'Todos', child: Text('Todos')),
+                DropdownMenuItem(value: 'iOS', child: Text('iOS')),
+                DropdownMenuItem(value: 'Android', child: Text('Android')),
+              ],
+              isExpanded: true,
+              underline: Container(),
+              dropdownColor: Colors.white,
+              iconEnabledColor: Colors.black,
+              style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            flex: 2,
+            child: TextField(
+              onChanged: handleSearchChanged,
+              decoration: InputDecoration(
+                hintText: 'Pesquisar',
+                prefixIcon: const Icon(Icons.search),
+                filled: true,
+                fillColor: Colors.grey.shade200,
+                contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 8),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide.none,
                 ),
               ),
             ),
           ),
-          const CustomBottomBar(),
         ],
       ),
     );
   }
 
-  Widget buildPhoneCard(String name, String imageUrl, BuildContext context) {
+  Widget buildPhoneCard(String name, String imageUrl, String phoneId, BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.pushNamed(
-          context,
-          '/details',
-          arguments: {
-            'phoneName': name,
-            'imageUrl': imageUrl,
-          },
-        );
+        Navigator.pushNamed(context, '/details', arguments: {'docId': phoneId});
       },
       child: Container(
         decoration: BoxDecoration(
@@ -120,8 +211,7 @@ class HomeScreen extends StatelessWidget {
           children: [
             Expanded(
               child: ClipRRect(
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(8)),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
                 child: Image.network(
                   imageUrl,
                   fit: BoxFit.cover,
@@ -132,12 +222,14 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             Container(
-              padding: const EdgeInsets.symmetric(vertical: 8),
+              padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
               alignment: Alignment.center,
               child: Text(
                 name,
+                textAlign: TextAlign.center,
                 style: const TextStyle(
                   color: Colors.white,
+                  fontSize: 12,
                   fontWeight: FontWeight.bold,
                 ),
               ),
