@@ -29,6 +29,10 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  void navigateToProfile() {
+    Navigator.pushNamed(context, '/profile');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -50,8 +54,8 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               child: StreamBuilder<List<Phone>>(
                 stream: currentIndex == 1
-                    ? PhoneService().getFavoritePhones(userId)  // ❤️ Aba Favoritos
-                    : PhoneService().getPhones(),               // 🏠 Aba Home
+                    ? PhoneService().getFavoritePhones(userId)
+                    : PhoneService().getPhones(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
@@ -134,7 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   });
                 },
               ),
-              const SizedBox(width: 40),
+              const SizedBox(width: 40), // espaço para o FAB
               IconButton(
                 icon: Icon(
                   Icons.person,
@@ -144,6 +148,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   setState(() {
                     currentIndex = 2;
                   });
+                  navigateToProfile(); // 👉 vai para a tela de perfil
                 },
               ),
             ],
