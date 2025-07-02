@@ -9,6 +9,7 @@ import 'package:pphonedex/screens/add_phone_screen.dart';
 import 'package:pphonedex/screens/SelectOpponentScreen.dart';
 import 'package:pphonedex/screens/profile_screen.dart'; // 👈 NOVO: tela de perfil
 import '/core/firebase_config.dart';
+import 'package:pphonedex/screens/feed_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,6 +41,7 @@ class PhoneDexApp extends StatelessWidget {
           final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
           return SelectOpponentScreen(firstPhoneId: args['firstPhoneId']);
         },
+        '/feed': (_) => const FeedScreen(),
       },
     );
   }

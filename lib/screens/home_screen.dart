@@ -4,6 +4,7 @@ import 'package:pphonedex/services/phone_service.dart';
 import 'package:pphonedex/models/phone_model.dart';
 import 'package:pphonedex/components/Phone_card.dart';
 import 'package:pphonedex/components/topbar.dart'; 
+import 'package:pphonedex/screens/feed_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -141,7 +142,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   });
                 },
               ),
-              const SizedBox(width: 40), // Espaço para o FAB
+              const SizedBox(width: 40), 
               IconButton(
                 icon: Icon(
                   Icons.person,
@@ -154,7 +155,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   navigateToProfile();
                 },
               ),
-              // Os círculos amarelos e brancos do design original podem ser adicionados aqui se desejar
+              IconButton(
+                icon: Icon(
+                  Icons.feed,
+                  color: currentIndex == 3 ? Colors.white : Colors.black, // Cor ajustada para contraste
+                ),
+                onPressed: () {
+                  Navigator.pushNamed(context, '/feed');
+                },
+              ),
               Row(
                 children: [
                   const SizedBox(width: 16),
