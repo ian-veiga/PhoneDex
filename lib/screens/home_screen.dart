@@ -15,6 +15,8 @@ class _HomeScreenState extends State<HomeScreen> {
   String searchQuery = '';
   int currentIndex = 0;
 
+  final String userId = 'usuario_demo'; // 👉 Troque depois pelo UID real do Firebase Auth
+
   void handleFilterSelected(String value) {
     setState(() {
       selectedOS = value;
@@ -37,7 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
         centerTitle: true,
         title: Image.asset(
           'assets/images/nomelogo.png',
-          height: 40, // ⬅️ Ajuste a altura da logo como quiser
+          height: 40,
         ),
       ),
       body: Column(
@@ -47,7 +49,9 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               child: StreamBuilder<List<Phone>>(
-                stream: PhoneService().getPhones(),
+                stream: currentIndex == 1
+                    ? PhoneService().getFavoritePhones(userId)  // ❤️ Aba Favoritos
+                    : PhoneService().getPhones(),               // 🏠 Aba Home
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
@@ -56,7 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     return Center(child: Text('Erro: ${snapshot.error}'));
                   }
                   if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Center(child: Text('Nenhum celular cadastrado.'));
+                    return const Center(child: Text('Nenhum celular encontrado.'));
                   }
 
                   final phones = snapshot.data!.where((phone) {
@@ -130,7 +134,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   });
                 },
               ),
-              const SizedBox(width: 40), // Espaço central para o FAB
+              const SizedBox(width: 40),
               IconButton(
                 icon: Icon(
                   Icons.person,
@@ -150,9 +154,22 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget buildTopBar() {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
+    return Container(
+     decoration: const BoxDecoration(
+        color: Colors.red,
+        border: Border(
+          right: BorderSide(color: Colors.black, width: 2),
+          top: BorderSide(color: Colors.black, width: 2),
+          bottom: BorderSide(color: Colors.black, width: 2),
+          left: BorderSide(color: Colors.black, width: 2),
+        ),
+      ),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: 12,
+      ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
         children: [
           Expanded(
             child: DropdownButton<String>(
@@ -178,17 +195,17 @@ class _HomeScreenState extends State<HomeScreen> {
           Expanded(
             flex: 2,
             child: TextField(
-              onChanged: handleSearchChanged,
               decoration: InputDecoration(
-                hintText: 'Pesquisar',
-                prefixIcon: const Icon(Icons.search),
+                hintText: 'Search',
                 filled: true,
-                fillColor: Colors.grey.shade200,
-                contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 8),
+                fillColor: Colors.white,
+                contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16, vertical: 0),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(30),
                   borderSide: BorderSide.none,
                 ),
+                prefixIcon: const Icon(Icons.search),
               ),
             ),
           ),
