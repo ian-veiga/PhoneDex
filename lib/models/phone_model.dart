@@ -7,6 +7,8 @@ class Phone {
   final String processor;
   final String battery;
   final String camera;
+  final String colors;       // ✅ Novo campo
+  final String screenSize;   // ✅ Novo campo
 
   Phone({
     required this.id,
@@ -17,6 +19,8 @@ class Phone {
     required this.processor,
     required this.battery,
     required this.camera,
+    required this.colors,
+    required this.screenSize,
   });
 
   Map<String, dynamic> toMap() {
@@ -28,6 +32,8 @@ class Phone {
       'processor': processor,
       'battery': battery,
       'camera': camera,
+      'colors': colors,           // ✅ Adicionado
+      'screenSize': screenSize,   // ✅ Adicionado
     };
   }
 
@@ -41,6 +47,8 @@ class Phone {
       processor: map['processor'] ?? '',
       battery: map['battery'] ?? '',
       camera: map['camera'] ?? '',
+      colors: map['colors'] ?? '',         // ✅ Adicionado
+      screenSize: map['screenSize'] ?? '', // ✅ Adicionado
     );
   }
 }

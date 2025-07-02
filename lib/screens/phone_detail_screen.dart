@@ -61,14 +61,14 @@ class _PhoneDetailScreenState extends State<PhoneDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFFFF8A80),
+        backgroundColor: const Color(000000),
         title: const Text('📱 Detalhes do Celular'),
         centerTitle: true,
       ),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFFFF8A80), Color(0xFFFFCDD2)],
+            colors: [Color(0000), Color(0000)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -121,6 +121,7 @@ class _PhoneDetailScreenState extends State<PhoneDetailScreen> {
                           data['imageUrl'],
                           height: 230,
                           fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) => const Icon(Icons.broken_image, size: 100),
                         ),
                       ),
                     ),
@@ -130,15 +131,19 @@ class _PhoneDetailScreenState extends State<PhoneDetailScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        _buildInfoCard('🧠 RAM', data['ram'] ?? ''),
-                        const SizedBox(height: 12),
-                        _buildInfoCard('📸 Câmera', data['camera'] ?? ''),
-                        const SizedBox(height: 12),
-                        _buildInfoCard('💾 Armazenamento', data['storage'] ?? ''),
-                        const SizedBox(height: 12),
-                        _buildInfoCard('⚙️ Processador', data['processor'] ?? ''),
-                        const SizedBox(height: 12),
-                        _buildInfoCard('🔋 Bateria', data['battery'] ?? ''),
+                        _buildInfoCard('🧠 RAM', data['ram']),
+                        _buildSpacing(),
+                        _buildInfoCard('📸 Câmera', data['camera']),
+                        _buildSpacing(),
+                        _buildInfoCard('💾 Armazenamento', data['storage']),
+                        _buildSpacing(),
+                        _buildInfoCard('⚙️ Processador', data['processor']),
+                        _buildSpacing(),
+                        _buildInfoCard('🔋 Bateria', data['battery']),
+                        _buildSpacing(),
+                        _buildInfoCard('🎨 Cores', data['colors']),
+                        _buildSpacing(),
+                        _buildInfoCard('📐 Tamanho da Tela', data['screenSize']),
                       ],
                     ),
 
@@ -193,7 +198,6 @@ class _PhoneDetailScreenState extends State<PhoneDetailScreen> {
                         ),
                       ],
                     ),
-
                     const SizedBox(height: 30),
                   ],
                 ),
@@ -205,7 +209,7 @@ class _PhoneDetailScreenState extends State<PhoneDetailScreen> {
     );
   }
 
-  Widget _buildInfoCard(String title, String value) {
+  Widget _buildInfoCard(String title, String? value) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
@@ -229,9 +233,11 @@ class _PhoneDetailScreenState extends State<PhoneDetailScreen> {
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 4),
-          Text(value),
+          Text(value ?? '-', style: const TextStyle(fontSize: 15)),
         ],
       ),
     );
   }
+
+  Widget _buildSpacing() => const SizedBox(height: 12);
 }

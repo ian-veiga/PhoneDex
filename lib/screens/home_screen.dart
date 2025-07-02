@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:pphonedex/screens/add_phone_screen.dart';
 import 'package:pphonedex/services/phone_service.dart';
 import 'package:pphonedex/models/phone_model.dart';
+import 'package:pphonedex/components/Phone_card.dart';
+import 'package:pphonedex/components/topbar.dart'; 
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -15,7 +17,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String searchQuery = '';
   int currentIndex = 0;
 
-  final String userId = 'usuario_demo'; // 👉 Troque depois pelo UID real do Firebase Auth
+  final String userId = 'usuario_demo';
 
   void handleFilterSelected(String value) {
     setState(() {
@@ -29,29 +31,31 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  void navigateToProfile() {
+    Navigator.pushNamed(context, '/profile');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
-      appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 173, 76, 76),
-        elevation: 1,
-        centerTitle: true,
-        title: Image.asset(
-          'assets/images/nomelogo.png',
-          height: 40,
-        ),
-      ),
+      backgroundColor: Colors.white,
       body: Column(
         children: [
-          buildTopBar(),
+          TopBar(
+            onFilterSelected: (value) {
+              if (value != null) {
+                handleFilterSelected(value);
+              }
+            },
+            onSearchChanged: handleSearchChanged,
+          ),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               child: StreamBuilder<List<Phone>>(
                 stream: currentIndex == 1
-                    ? PhoneService().getFavoritePhones(userId)  // ❤️ Aba Favoritos
-                    : PhoneService().getPhones(),               // 🏠 Aba Home
+                    ? PhoneService().getFavoritePhones(userId)
+                    : PhoneService().getPhones(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
@@ -103,19 +107,22 @@ class _HomeScreenState extends State<HomeScreen> {
         tooltip: 'Adicionar Celular',
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: BottomAppBar(
+       bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),
-        notchMargin: 6,
-        color: Colors.white,
-        child: SizedBox(
-          height: 60,
+        color: Colors.red, // Cor do BottomAppBar
+        child: Container(
+           width: double.infinity,
+           height:double.infinity,
+          decoration: const BoxDecoration(
+            color: Colors.red,
+          ),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               IconButton(
                 icon: Icon(
                   Icons.home,
-                  color: currentIndex == 0 ? Colors.red : Colors.grey,
+                  color: currentIndex == 0 ? Colors.white : Colors.black, // Cor ajustada para contraste
                 ),
                 onPressed: () {
                   setState(() {
@@ -126,7 +133,7 @@ class _HomeScreenState extends State<HomeScreen> {
               IconButton(
                 icon: Icon(
                   Icons.favorite,
-                  color: currentIndex == 1 ? Colors.red : Colors.grey,
+                  color: currentIndex == 1 ? Colors.white : Colors.black, // Cor ajustada para contraste
                 ),
                 onPressed: () {
                   setState(() {
@@ -134,17 +141,41 @@ class _HomeScreenState extends State<HomeScreen> {
                   });
                 },
               ),
-              const SizedBox(width: 40),
+              const SizedBox(width: 40), // Espaço para o FAB
               IconButton(
                 icon: Icon(
                   Icons.person,
-                  color: currentIndex == 2 ? Colors.red : Colors.grey,
+                  color: currentIndex == 2 ? Colors.white : Colors.black, // Cor ajustada para contraste
                 ),
                 onPressed: () {
                   setState(() {
                     currentIndex = 2;
                   });
+                  navigateToProfile();
                 },
+              ),
+              // Os círculos amarelos e brancos do design original podem ser adicionados aqui se desejar
+              Row(
+                children: [
+                  const SizedBox(width: 16),
+                  Container(
+                    width: 20,
+                    height: 20,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.yellow,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    width: 20,
+                    height: 20,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -152,108 +183,5 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-
-  Widget buildTopBar() {
-    return Container(
-     decoration: const BoxDecoration(
-        color: Colors.red,
-        border: Border(
-          right: BorderSide(color: Colors.black, width: 2),
-          top: BorderSide(color: Colors.black, width: 2),
-          bottom: BorderSide(color: Colors.black, width: 2),
-          left: BorderSide(color: Colors.black, width: 2),
-        ),
-      ),
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 12,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          Expanded(
-            child: DropdownButton<String>(
-              value: selectedOS,
-              onChanged: (value) {
-                if (value != null) {
-                  handleFilterSelected(value);
-                }
-              },
-              items: const [
-                DropdownMenuItem(value: 'Todos', child: Text('Todos')),
-                DropdownMenuItem(value: 'iOS', child: Text('iOS')),
-                DropdownMenuItem(value: 'Android', child: Text('Android')),
-              ],
-              isExpanded: true,
-              underline: Container(),
-              dropdownColor: Colors.white,
-              iconEnabledColor: Colors.black,
-              style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            flex: 2,
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Search',
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 0),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  borderSide: BorderSide.none,
-                ),
-                prefixIcon: const Icon(Icons.search),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
-  Widget buildPhoneCard(String name, String imageUrl, String phoneId, BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.pushNamed(context, '/details', arguments: {'docId': phoneId});
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.black,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Column(
-          children: [
-            Expanded(
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
-                child: Image.network(
-                  imageUrl,
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  errorBuilder: (_, __, ___) =>
-                      Container(color: Colors.grey.shade300),
-                ),
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
-              alignment: Alignment.center,
-              child: Text(
-                name,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}

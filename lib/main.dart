@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:pphonedex/screens/register_screen.dart';
 import 'package:pphonedex/screens/splash_screen.dart';
 import 'package:pphonedex/screens/login_screen.dart';
 import 'package:pphonedex/screens/home_screen.dart';
 import 'package:pphonedex/screens/phone_detail_screen.dart';
-import '/core/firebase_config.dart';
 import 'package:pphonedex/screens/add_phone_screen.dart';
 import 'package:pphonedex/screens/SelectOpponentScreen.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:pphonedex/screens/profile_screen.dart'; // 👈 NOVO: tela de perfil
+import '/core/firebase_config.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,8 +35,7 @@ class PhoneDexApp extends StatelessWidget {
         '/home': (_) => const HomeScreen(),
         '/details': (_) => const PhoneDetailScreen(),
         '/add_phone': (_) => AddPhoneScreen(),
-
-        // ✅ ROTA PARA A TELA DE SELEÇÃO DE OPONENTE (com argumento)
+        '/profile': (_) => const ProfileScreen(), // ✅ Rota para tela de perfil
         '/selectForVs': (context) {
           final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
           return SelectOpponentScreen(firstPhoneId: args['firstPhoneId']);
