@@ -20,8 +20,8 @@ class ComparisonScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color(0xFFFF8A80),
-        title: const Text('Comparação VS'),
+        backgroundColor: const Color(0xFFFF8A80),
+        title: const Text('📱 Comparação VS'),
         centerTitle: true,
       ),
       body: Container(
@@ -41,7 +41,7 @@ class ComparisonScreen extends StatelessWidget {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
             }
-            if (!snapshot.hasData) {
+            if (!snapshot.hasData || snapshot.data!.length < 2) {
               return const Center(child: Text('Erro ao carregar dados.'));
             }
 
@@ -53,34 +53,32 @@ class ComparisonScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // ======== Cabeçalho (Imagens + VS) Centralizado ========
-                  Container(
-                    width: double.infinity,
-                    margin: const EdgeInsets.only(bottom: 24),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        buildPhoneCard(firstData),
-                        const Text(
-                          'VS',
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
+                  // Imagens + VS
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      buildPhoneCard(firstData),
+                      const Text(
+                        'VS',
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
-                        buildPhoneCard(secondData),
-                      ],
-                    ),
+                      ),
+                      buildPhoneCard(secondData),
+                    ],
                   ),
+                  const SizedBox(height: 24),
 
-                  // ======== Seções das especificações ========
+                  // Seções comparativas
                   buildSpecSection('🧠 RAM', firstData['ram'], secondData['ram']),
                   buildSpecSection('📸 Câmera', firstData['camera'], secondData['camera']),
                   buildSpecSection('💾 Armazenamento', firstData['storage'], secondData['storage']),
                   buildSpecSection('⚙️ Processador', firstData['processor'], secondData['processor']),
                   buildSpecSection('🔋 Bateria', firstData['battery'], secondData['battery']),
+                  buildSpecSection('🎨 Cores', firstData['colors'], secondData['colors']),
+                  buildSpecSection('📐 Tela', firstData['screenSize'], secondData['screenSize']),
                 ],
               ),
             );
@@ -92,7 +90,6 @@ class ComparisonScreen extends StatelessWidget {
 
   Widget buildPhoneCard(Map<String, dynamic> data) {
     return Column(
-      mainAxisSize: MainAxisSize.min,
       children: [
         Container(
           padding: const EdgeInsets.all(8),
@@ -126,7 +123,10 @@ class ComparisonScreen extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           data['name'] ?? '',
-          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
           textAlign: TextAlign.center,
         ),
       ],
@@ -135,7 +135,6 @@ class ComparisonScreen extends StatelessWidget {
 
   Widget buildSpecSection(String title, String? firstValue, String? secondValue) {
     return Container(
-      width: double.infinity,
       margin: const EdgeInsets.symmetric(vertical: 10),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -150,18 +149,13 @@ class ComparisonScreen extends StatelessWidget {
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
             title,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           ),
           const SizedBox(height: 8),
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
                 child: Text(
