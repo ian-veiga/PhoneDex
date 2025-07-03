@@ -7,8 +7,8 @@ class Phone {
   final String processor;
   final String battery;
   final String camera;
-  final String colors;       // ✅ Novo campo
-  final String screenSize;   // ✅ Novo campo
+  final String colors;       
+  final String screenSize;   
 
   Phone({
     required this.id,
@@ -32,8 +32,8 @@ class Phone {
       'processor': processor,
       'battery': battery,
       'camera': camera,
-      'colors': colors,           // ✅ Adicionado
-      'screenSize': screenSize,   // ✅ Adicionado
+      'colors': colors,          
+      'screenSize': screenSize,   
     };
   }
 
@@ -47,8 +47,8 @@ class Phone {
       processor: map['processor'] ?? '',
       battery: map['battery'] ?? '',
       camera: map['camera'] ?? '',
-      colors: map['colors'] ?? '',         // ✅ Adicionado
-      screenSize: map['screenSize'] ?? '', // ✅ Adicionado
+      colors: map['colors'] ?? '',         
+      screenSize: map['screenSize'] ?? '', 
     );
   }
 }

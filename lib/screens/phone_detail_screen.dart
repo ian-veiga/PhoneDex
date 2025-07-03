@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class PhoneDetailScreen extends StatefulWidget {
   const PhoneDetailScreen({super.key});
@@ -10,8 +11,19 @@ class PhoneDetailScreen extends StatefulWidget {
 
 class _PhoneDetailScreenState extends State<PhoneDetailScreen> {
   bool isFavorite = false;
-  final String userId = 'usuario_demo';
+   String userId = 'usuario_demo';
   late String docId;
+
+  @override
+  void initState() {
+    super.initState();
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      userId = user.uid;
+    } else {
+      userId = 'usuario_demo';
+    }
+  }
 
   @override
   void didChangeDependencies() {
