@@ -5,6 +5,7 @@ import 'package:pphonedex/models/phone_model.dart';
 import 'package:pphonedex/components/Phone_card.dart';
 import 'package:pphonedex/components/topbar.dart'; 
 import 'package:pphonedex/screens/feed_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -18,7 +19,18 @@ class _HomeScreenState extends State<HomeScreen> {
   String searchQuery = '';
   int currentIndex = 0;
 
-  final String userId = 'usuario_demo';
+  String userId = 'usuario_demo';
+
+   @override
+  void initState() {
+    super.initState();
+    // Obtém o usuário atual do Firebase Auth
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      // Se o usuário estiver logado, atualiza o userId com seu UID
+      userId = user.uid;
+    }
+  }
 
   void handleFilterSelected(String value) {
     setState(() {
