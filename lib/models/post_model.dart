@@ -1,4 +1,3 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Post {
@@ -9,6 +8,7 @@ class Post {
   final String phoneId;
   final String phoneName;
   final String text;
+  final String link;
   final double rating;
   final Timestamp createdAt;
   final List<String> likes;
@@ -21,14 +21,14 @@ class Post {
     required this.phoneId,
     required this.phoneName,
     required this.text,
+    required this.link,
     required this.rating,
     required this.createdAt,
     required this.likes,
   });
 
- 
   factory Post.fromFirestore(DocumentSnapshot doc) {
-    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+    final data = doc.data() as Map<String, dynamic>;
     return Post(
       id: doc.id,
       userId: data['userId'] ?? '',
@@ -37,7 +37,8 @@ class Post {
       phoneId: data['phoneId'] ?? '',
       phoneName: data['phoneName'] ?? '',
       text: data['text'] ?? '',
-      rating: (data['rating'] ?? 0.0).toDouble(),
+      link: data['link'] ?? '',
+      rating: (data['rating'] ?? 0).toDouble(),
       createdAt: data['createdAt'] ?? Timestamp.now(),
       likes: List<String>.from(data['likes'] ?? []),
     );
@@ -51,6 +52,7 @@ class Post {
       'phoneId': phoneId,
       'phoneName': phoneName,
       'text': text,
+      'link': link,
       'rating': rating,
       'createdAt': createdAt,
       'likes': likes,

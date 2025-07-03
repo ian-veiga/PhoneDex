@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -19,14 +20,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String? photoUrl;
   File? selectedImage;
   bool showPassword = false;
+  String? username;
 
   @override
   void initState() {
     super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
     final user = _auth.currentUser;
     if (user != null) {
       _emailController.text = user.email ?? '';
       photoUrl = user.photoURL;
+
+      final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      setState(() {
+        username = doc.data()?['username'] ?? 'Perfil do Usuário';
+      });
     }
   }
 
@@ -43,8 +54,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
 
       if (selectedImage != null) {
-        // Em produção, você subiria a imagem para o Firebase Storage e pegaria a URL
-        String newPhotoUrl = "https://placehold.co/100x100"; // Substitua pela URL real
+        // Exemplo fictício — substitua com upload real
+        String newPhotoUrl = "https://placehold.co/100x100";
         await user.updatePhotoURL(newPhotoUrl);
       }
 
@@ -88,10 +99,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       extendBodyBehindAppBar: true,
       backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: const Text("Perfil do Usuário"),
+        title: Text(username ?? "Perfil do Usuário"),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        foregroundColor: Colors.white, // cor do ícone de voltar
+        foregroundColor: Colors.white,
       ),
       body: Container(
         width: double.infinity,
@@ -110,9 +121,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const SizedBox(height: 24),
-                const Text(
-                  "Perfil do Usuário",
-                  style: TextStyle(
+                Text(
+                  username ?? "Perfil do Usuário",
+                  style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
@@ -163,7 +174,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     labelText: "Nova Senha",
                     prefixIcon: const Icon(Icons.lock),
                     suffixIcon: IconButton(
-                      icon: Icon(showPassword ? Icons.visibility_off : Icons.visibility),
+                      icon: Icon(showPassword ? Icons.visibility : Icons.visibility_off),
                       onPressed: () {
                         setState(() {
                           showPassword = !showPassword;

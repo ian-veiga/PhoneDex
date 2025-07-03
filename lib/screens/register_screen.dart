@@ -11,6 +11,7 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final AuthService _authService = AuthService();
@@ -21,17 +22,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
   String? _error;
 
   void _register() async {
+    if (!_formKey.currentState!.validate()) return;
+
     setState(() {
       _loading = true;
       _error = null;
     });
+
     try {
       final user = await _authService.register(
         _emailController.text.trim(),
         _passwordController.text.trim(),
+        _usernameController.text.trim(),
       );
       if (user != null) {
-        // Registro bem-sucedido, navegue para a próxima tela
         Navigator.of(context).pushReplacementNamed('/login');
       }
     } catch (e) {
@@ -46,13 +50,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _usernameController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
     final logoWidth = screenSize.width * 0.5;
-    final logoHeight = logoWidth;
 
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.of(context).pushReplacementNamed('/login'),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
       body: Stack(
         children: [
           Center(
@@ -63,11 +82,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      const SizedBox(height: 60),
+                      const SizedBox(height: 10),
                       Image.asset(
                         'assets/images/logo_com_nome.png',
                         width: logoWidth,
-                        height: logoHeight,
+                        height: logoWidth,
                       ),
                       const SizedBox(height: 16),
                       Form(
@@ -75,6 +94,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
+                            TextFormField(
+                              controller: _usernameController,
+                              decoration: const InputDecoration(
+                                labelText: 'Nome de Usuário',
+                                prefixIcon: Icon(Icons.person),
+                                border: UnderlineInputBorder(),
+                              ),
+                              validator: (val) => val == null || val.isEmpty
+                                  ? 'Informe um nome de usuário'
+                                  : null,
+                            ),
+                            const SizedBox(height: 16),
                             TextFormField(
                               controller: _emailController,
                               decoration: const InputDecoration(
@@ -133,20 +164,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 border: const UnderlineInputBorder(),
                               ),
                               validator: (val) =>
-                                  val == null || val.isEmpty ? 'Confirme a senha' : null,
+                                  val != _passwordController.text
+                                      ? 'As senhas não coincidem'
+                                      : null,
                             ),
                             const SizedBox(height: 16),
                             if (_error != null)
-                              Text(_error!, style: TextStyle(color: Colors.red)),
+                              Text(_error!, style: const TextStyle(color: Colors.red)),
                             const SizedBox(height: 16),
                             _loading
-                                ? CircularProgressIndicator()
+                                ? const CircularProgressIndicator()
                                 : ElevatedButton(
-                                    onPressed: () {
-                                      if (_formKey.currentState!.validate()) {
-                                        _register();
-                                      }
-                                    },
+                                    onPressed: _register,
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Colors.blueGrey[800],
                                       shape: RoundedRectangleBorder(
@@ -155,7 +184,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       padding: const EdgeInsets.symmetric(vertical: 16.0),
                                     ),
                                     child: const Text(
-                                      'CADASTRA-SE',
+                                      'CADASTRAR-SE',
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontSize: 16,
