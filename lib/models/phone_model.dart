@@ -9,6 +9,7 @@ class Phone {
   final String camera;
   final String colors;       
   final String screenSize;   
+  final String userId;
 
   Phone({
     required this.id,
@@ -21,6 +22,7 @@ class Phone {
     required this.camera,
     required this.colors,
     required this.screenSize,
+    required this.userId,
   });
 
   Map<String, dynamic> toMap() {
@@ -34,6 +36,7 @@ class Phone {
       'camera': camera,
       'colors': colors,          
       'screenSize': screenSize,   
+      'userId': userId
     };
   }
 
@@ -49,6 +52,7 @@ class Phone {
       camera: map['camera'] ?? '',
       colors: map['colors'] ?? '',         
       screenSize: map['screenSize'] ?? '', 
+      userId: map['userId'] ?? '',
     );
   }
 }

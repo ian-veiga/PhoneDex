@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:pphonedex/models/phone_model.dart'; // IMPORTAR
+import 'package:pphonedex/screens/add_phone_screen.dart'; // IMPORTAR
+import 'package:pphonedex/services/phone_service.dart'; // IMPORTAR
 
 class PhoneDetailScreen extends StatefulWidget {
   const PhoneDetailScreen({super.key});
@@ -11,8 +14,9 @@ class PhoneDetailScreen extends StatefulWidget {
 
 class _PhoneDetailScreenState extends State<PhoneDetailScreen> {
   bool isFavorite = false;
-   String userId = 'usuario_demo';
+  String? userId; // MODIFICADO
   late String docId;
+  final PhoneService _phoneService = PhoneService(); // NOVO
 
   @override
   void initState() {
@@ -20,8 +24,6 @@ class _PhoneDetailScreenState extends State<PhoneDetailScreen> {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       userId = user.uid;
-    } else {
-      userId = 'usuario_demo';
     }
   }
 
@@ -30,19 +32,28 @@ class _PhoneDetailScreenState extends State<PhoneDetailScreen> {
     super.didChangeDependencies();
     final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
     docId = args['docId'];
-    checkFavorite(docId);
+    if (userId != null) {
+        checkFavorite(docId);
+    }
   }
 
   Future<void> checkFavorite(String phoneId) async {
-    final docRef = FirebaseFirestore.instance.collection('favorites').doc('${userId}_$phoneId');
+    if (userId == null) return;
+    final docRef = FirebaseFirestore.instance.collection('favorites').doc('${userId!}_$phoneId');
     final doc = await docRef.get();
-    setState(() {
-      isFavorite = doc.exists;
-    });
+    if (mounted) {
+      setState(() {
+        isFavorite = doc.exists;
+      });
+    }
   }
 
   Future<void> toggleFavorite() async {
-    final favRef = FirebaseFirestore.instance.collection('favorites').doc('${userId}_$docId');
+    if (userId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Você precisa estar logado.')));
+        return;
+    }
+    final favRef = FirebaseFirestore.instance.collection('favorites').doc('${userId!}_$docId');
 
     if (isFavorite) {
       await favRef.delete();
@@ -56,9 +67,39 @@ class _PhoneDetailScreenState extends State<PhoneDetailScreen> {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Adicionado aos favoritos!')));
     }
 
-    setState(() {
-      isFavorite = !isFavorite;
-    });
+    if (mounted) {
+      setState(() {
+        isFavorite = !isFavorite;
+      });
+    }
+  }
+  
+  void _deletePhone(String phoneId) { // NOVO
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirmar Exclusão'),
+          content: const Text('Tem certeza que deseja excluir este celular?'),
+          actions: [
+            TextButton(
+              child: const Text('Cancelar'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            TextButton(
+              child: const Text('Excluir'),
+              onPressed: () async {
+                await _phoneService.deletePhone(phoneId);
+                Navigator.of(context).pop(); // Fecha o dialog
+                Navigator.of(context).pop(); // Volta para a tela anterior
+                ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Celular excluído com sucesso!')));
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void startVsMode(BuildContext context) {
@@ -95,7 +136,8 @@ class _PhoneDetailScreenState extends State<PhoneDetailScreen> {
               return const Center(child: Text('Celular não encontrado'));
             }
 
-            final data = snapshot.data!.data() as Map<String, dynamic>;
+            final phone = Phone.fromMap(snapshot.data!.data() as Map<String, dynamic>, snapshot.data!.id);
+            final isOwner = phone.userId == userId;
 
             return SingleChildScrollView(
               child: Padding(
@@ -104,7 +146,7 @@ class _PhoneDetailScreenState extends State<PhoneDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
-                      data['name'] ?? '',
+                      phone.name,
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontSize: 28,
@@ -130,7 +172,7 @@ class _PhoneDetailScreenState extends State<PhoneDetailScreen> {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(12),
                         child: Image.network(
-                          data['imageUrl'],
+                          phone.imageUrl,
                           height: 230,
                           fit: BoxFit.contain,
                           errorBuilder: (_, __, ___) => const Icon(Icons.broken_image, size: 100),
@@ -143,19 +185,19 @@ class _PhoneDetailScreenState extends State<PhoneDetailScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        _buildInfoCard('🧠 RAM', data['ram']),
+                        _buildInfoCard('🧠 RAM', phone.ram),
                         _buildSpacing(),
-                        _buildInfoCard('📸 Câmera', data['camera']),
+                        _buildInfoCard('📸 Câmera', phone.camera),
                         _buildSpacing(),
-                        _buildInfoCard('💾 Armazenamento', data['storage']),
+                        _buildInfoCard('💾 Armazenamento', phone.storage),
                         _buildSpacing(),
-                        _buildInfoCard('⚙️ Processador', data['processor']),
+                        _buildInfoCard('⚙️ Processador', phone.processor),
                         _buildSpacing(),
-                        _buildInfoCard('🔋 Bateria', data['battery']),
+                        _buildInfoCard('🔋 Bateria', phone.battery),
                         _buildSpacing(),
-                        _buildInfoCard('🎨 Cores', data['colors']),
+                        _buildInfoCard('🎨 Cores', phone.colors),
                         _buildSpacing(),
-                        _buildInfoCard('📐 Tamanho da Tela', data['screenSize']),
+                        _buildInfoCard('📐 Tamanho da Tela', phone.screenSize),
                       ],
                     ),
 
@@ -210,6 +252,46 @@ class _PhoneDetailScreenState extends State<PhoneDetailScreen> {
                         ),
                       ],
                     ),
+                    if (isOwner) ...[ // EXIBIÇÃO CONDICIONAL
+                      const SizedBox(height: 20),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                Navigator.push(context, MaterialPageRoute(
+                                  builder: (_) => AddPhoneScreen(phoneToEdit: phone),
+                                ));
+                              },
+                              icon: const Icon(Icons.edit, color: Colors.white),
+                              label: const Text('Editar', style: TextStyle(color: Colors.white)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: () => _deletePhone(phone.id),
+                              icon: const Icon(Icons.delete, color: Colors.white),
+                              label: const Text('Excluir', style: TextStyle(color: Colors.white)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.orange,
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                     const SizedBox(height: 30),
                   ],
                 ),

@@ -1,8 +1,13 @@
+import 'package:firebase_auth/firebase_auth.dart'; // IMPORTAR
 import 'package:flutter/material.dart';
 import '../models/phone_model.dart';
 import '../services/phone_service.dart';
 
 class AddPhoneScreen extends StatefulWidget {
+  final Phone? phoneToEdit; // Adicionar para edição
+
+  const AddPhoneScreen({super.key, this.phoneToEdit}); // Modificar construtor
+
   @override
   State<AddPhoneScreen> createState() => _AddPhoneScreenState();
 }
@@ -20,13 +25,31 @@ class _AddPhoneScreenState extends State<AddPhoneScreen> {
   final _screenSizeController = TextEditingController();
 
   final _service = PhoneService();
+  bool get isEditing => widget.phoneToEdit != null; // NOVO
+
+  @override
+  void initState() {
+    super.initState();
+    if (isEditing) { // NOVO
+      final phone = widget.phoneToEdit!;
+      _nameController.text = phone.name;
+      _imageUrlController.text = phone.imageUrl;
+      _ramController.text = phone.ram;
+      _cameraController.text = phone.camera;
+      _storageController.text = phone.storage;
+      _processorController.text = phone.processor;
+      _batteryController.text = phone.battery;
+      _colorsController.text = phone.colors;
+      _screenSizeController.text = phone.screenSize;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Adicionar Celular'),
-        backgroundColor: Color(0xFFFF8A80),
+        title: Text(isEditing ? 'Editar Celular' : 'Adicionar Celular'), // MODIFICADO
+        backgroundColor: const Color(0xFFFF8A80),
         elevation: 0,
       ),
       body: Container(
@@ -44,11 +67,10 @@ class _AddPhoneScreenState extends State<AddPhoneScreen> {
               key: _formKey,
               child: Column(
                 children: [
-                  // Ícone "+" centralizado
                   Container(
                     margin: const EdgeInsets.only(bottom: 24),
-                    child: const Icon(
-                      Icons.add_circle,
+                    child: Icon(
+                      isEditing ? Icons.edit : Icons.add_circle, // MODIFICADO
                       size: 60,
                       color: Colors.white,
                     ),
@@ -68,8 +90,16 @@ class _AddPhoneScreenState extends State<AddPhoneScreen> {
                     child: ElevatedButton(
                       onPressed: () async {
                         if (_formKey.currentState!.validate()) {
+                          final user = FirebaseAuth.instance.currentUser;
+                          if (user == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Você precisa estar logado para realizar esta ação.')),
+                            );
+                            return;
+                          }
+
                           final phone = Phone(
-                            id: DateTime.now().millisecondsSinceEpoch.toString(),
+                            id: isEditing ? widget.phoneToEdit!.id : DateTime.now().millisecondsSinceEpoch.toString(),
                             name: _nameController.text,
                             imageUrl: _imageUrlController.text,
                             ram: _ramController.text,
@@ -79,8 +109,14 @@ class _AddPhoneScreenState extends State<AddPhoneScreen> {
                             battery: _batteryController.text,
                             colors: _colorsController.text,
                             screenSize: _screenSizeController.text,
+                            userId: user.uid, // MODIFICADO
                           );
-                          await _service.addPhone(phone);
+
+                          if (isEditing) { // MODIFICADO
+                            await _service.updatePhone(phone);
+                          } else {
+                            await _service.addPhone(phone);
+                          }
                           Navigator.pop(context);
                         }
                       },
@@ -92,9 +128,9 @@ class _AddPhoneScreenState extends State<AddPhoneScreen> {
                           borderRadius: BorderRadius.circular(30),
                         ),
                       ),
-                      child: const Text(
-                        'Adicionar Celular',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      child: Text(
+                        isEditing ? 'Salvar Alterações' : 'Adicionar Celular', // MODIFICADO
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                     ),
                   )
