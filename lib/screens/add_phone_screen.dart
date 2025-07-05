@@ -89,36 +89,56 @@ class _AddPhoneScreenState extends State<AddPhoneScreen> {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () async {
-                        if (_formKey.currentState!.validate()) {
-                          final user = FirebaseAuth.instance.currentUser;
-                          if (user == null) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Você precisa estar logado para realizar esta ação.')),
-                            );
-                            return;
-                          }
+  if (!_formKey.currentState!.validate()) {
+    return; // Não faz nada se o formulário for inválido
+  }
 
-                          final phone = Phone(
-                            id: isEditing ? widget.phoneToEdit!.id : DateTime.now().millisecondsSinceEpoch.toString(),
-                            name: _nameController.text,
-                            imageUrl: _imageUrlController.text,
-                            ram: _ramController.text,
-                            camera: _cameraController.text,
-                            storage: _storageController.text,
-                            processor: _processorController.text,
-                            battery: _batteryController.text,
-                            colors: _colorsController.text,
-                            screenSize: _screenSizeController.text,
-                            userId: user.uid, // MODIFICADO
-                          );
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Você precisa estar logado para realizar esta ação.')),
+    );
+    return;
+  }
 
-                          if (isEditing) { // MODIFICADO
-                            await _service.updatePhone(phone);
-                          } else {
-                            await _service.addPhone(phone);
-                          }
-                          Navigator.pop(context);
-                        }
+  // --- INÍCIO DA MODIFICAÇÃO: Adicionando o try/catch ---
+  try {
+    // Monta o objeto Phone
+    final phone = Phone(
+      id: isEditing ? widget.phoneToEdit!.id : DateTime.now().millisecondsSinceEpoch.toString(),
+      name: _nameController.text,
+      imageUrl: _imageUrlController.text,
+      ram: _ramController.text,
+      camera: _cameraController.text,
+      storage: _storageController.text,
+      processor: _processorController.text,
+      battery: _batteryController.text,
+      colors: _colorsController.text,
+      screenSize: _screenSizeController.text,
+      userId: user.uid,
+      status: 'pending', // Garante que o status é 'pending'
+    );
+
+    // Tenta adicionar o celular ao banco de dados
+    if (isEditing) {
+      await _service.updatePhone(phone);
+    } else {
+      await _service.addPhone(phone);
+    }
+
+    // Se a operação for bem-sucedida, mostra a mensagem de sucesso e volta
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Celular enviado para aprovação!')),
+    );
+    Navigator.pop(context);
+
+  } catch (e) {
+    // Se ocorrer um erro, ele será capturado aqui
+    // e exibido em uma SnackBar para depuração.
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Erro ao salvar: ${e.toString()}')),
+    );
+  }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,

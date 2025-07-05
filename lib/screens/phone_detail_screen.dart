@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:pphonedex/models/phone_model.dart'; // IMPORTAR
-import 'package:pphonedex/screens/add_phone_screen.dart'; // IMPORTAR
-import 'package:pphonedex/services/phone_service.dart'; // IMPORTAR
+import 'package:pphonedex/models/phone_model.dart';
+import 'package:pphonedex/screens/add_phone_screen.dart';
+import 'package:pphonedex/services/phone_service.dart';
 
 class PhoneDetailScreen extends StatefulWidget {
   const PhoneDetailScreen({super.key});
@@ -14,28 +14,34 @@ class PhoneDetailScreen extends StatefulWidget {
 
 class _PhoneDetailScreenState extends State<PhoneDetailScreen> {
   bool isFavorite = false;
-  String? userId; // MODIFICADO
-  late String docId;
-  final PhoneService _phoneService = PhoneService(); // NOVO
+  String? userId;
+  String? docId; 
+  final PhoneService _phoneService = PhoneService();
 
-  @override
-  void initState() {
-    super.initState();
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      userId = user.uid;
-    }
-  }
-
+  
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-    docId = args['docId'];
-    if (userId != null) {
-        checkFavorite(docId);
+    if (docId == null) {
+      final args = ModalRoute.of(context)?.settings.arguments;
+
+  
+      if (args != null && args is Map<String, dynamic>) {
+        
+        if (args.containsKey('docId')) {
+          setState(() {
+            docId = args['docId'];
+            final user = FirebaseAuth.instance.currentUser;
+            if (user != null) {
+              userId = user.uid;
+              checkFavorite(docId!);
+            }
+          });
+        }
+      }
     }
   }
+
 
   Future<void> checkFavorite(String phoneId) async {
     if (userId == null) return;
@@ -49,12 +55,11 @@ class _PhoneDetailScreenState extends State<PhoneDetailScreen> {
   }
 
   Future<void> toggleFavorite() async {
-    if (userId == null) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Você precisa estar logado.')));
-        return;
+    if (userId == null || docId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erro: ID do celular ou usuário não encontrado.')));
+      return;
     }
-    final favRef = FirebaseFirestore.instance.collection('favorites').doc('${userId!}_$docId');
-
+    final favRef = FirebaseFirestore.instance.collection('favorites').doc('${userId!}_${docId!}');
     if (isFavorite) {
       await favRef.delete();
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Removido dos favoritos.')));
@@ -66,15 +71,14 @@ class _PhoneDetailScreenState extends State<PhoneDetailScreen> {
       });
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Adicionado aos favoritos!')));
     }
-
     if (mounted) {
       setState(() {
         isFavorite = !isFavorite;
       });
     }
   }
-  
-  void _deletePhone(String phoneId) { // NOVO
+
+  void _deletePhone(String phoneId) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -90,8 +94,8 @@ class _PhoneDetailScreenState extends State<PhoneDetailScreen> {
               child: const Text('Excluir'),
               onPressed: () async {
                 await _phoneService.deletePhone(phoneId);
-                Navigator.of(context).pop(); // Fecha o dialog
-                Navigator.of(context).pop(); // Volta para a tela anterior
+                Navigator.of(context).pop();
+                Navigator.of(context).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Celular excluído com sucesso!')));
               },
@@ -103,32 +107,45 @@ class _PhoneDetailScreenState extends State<PhoneDetailScreen> {
   }
 
   void startVsMode(BuildContext context) {
-    Navigator.pushNamed(
-      context,
-      '/selectForVs',
-      arguments: {'firstPhoneId': docId},
-    );
+    if (docId != null) {
+      Navigator.pushNamed(
+        context,
+        '/selectForVs',
+        arguments: {'firstPhoneId': docId!},
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    // Se, por algum motivo, o docId ainda for nulo, mostra uma tela de erro amigável.
+    if (docId == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Erro')),
+        body: const Center(
+          child: Text('Não foi possível carregar os detalhes do celular. ID não fornecido.'),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(000000),
+        backgroundColor: Colors.red,
         title: const Text('📱 Detalhes do Celular'),
         centerTitle: true,
       ),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0000), Color(0000)],
+            colors: [Color(0x00000000), Color(0x00000000)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
         ),
         child: FutureBuilder<DocumentSnapshot>(
-          future: FirebaseFirestore.instance.collection('phones').doc(docId).get(),
+          future: FirebaseFirestore.instance.collection('phones').doc(docId!).get(),
           builder: (context, snapshot) {
+            // ... (o resto do seu código continua igual)
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
             }
@@ -155,7 +172,6 @@ class _PhoneDetailScreenState extends State<PhoneDetailScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
@@ -179,9 +195,7 @@ class _PhoneDetailScreenState extends State<PhoneDetailScreen> {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 24),
-
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
@@ -200,9 +214,7 @@ class _PhoneDetailScreenState extends State<PhoneDetailScreen> {
                         _buildInfoCard('📐 Tamanho da Tela', phone.screenSize),
                       ],
                     ),
-
                     const SizedBox(height: 30),
-
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -252,7 +264,7 @@ class _PhoneDetailScreenState extends State<PhoneDetailScreen> {
                         ),
                       ],
                     ),
-                    if (isOwner) ...[ // EXIBIÇÃO CONDICIONAL
+                    if (isOwner) ...[
                       const SizedBox(height: 20),
                       Row(
                         children: [
