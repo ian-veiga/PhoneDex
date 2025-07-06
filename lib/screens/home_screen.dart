@@ -83,13 +83,21 @@ class _HomeScreenState extends State<HomeScreen> {
     final isSelected = currentIndex == index;
     return InkWell(
       onTap: () {
-        setState(() {
-          currentIndex = index;
-        });
-        if (index == 3) {
-          Navigator.pushNamed(context, '/feed');
-        }
-      },
+  
+  if (index == 2) {
+    Navigator.pushNamed(context, '/map');
+  } 
+  
+  else if (index == 3) {
+    Navigator.pushNamed(context, '/feed');
+  } 
+  
+  else {
+    setState(() {
+      currentIndex = index;
+    });
+  }
+},
       borderRadius: BorderRadius.circular(30),
       child: Container(
         padding: const EdgeInsets.all(10),
@@ -201,6 +209,7 @@ class _HomeScreenState extends State<HomeScreen> {
               // Lado esquerdo
               Row(
                 children: [
+                  _buildIndicatorDot(Colors.white),
                   _buildNavIcon(Icons.home, 0),
                   _buildNavIcon(Icons.favorite, 1),
                 ],
@@ -208,9 +217,10 @@ class _HomeScreenState extends State<HomeScreen> {
               // Lado direito
               Row(
                 children: [
+                  _buildNavIcon(Icons.map, 2),
                   _buildNavIcon(Icons.feed, 3),
                   _buildIndicatorDot(Colors.yellow),
-                  _buildIndicatorDot(Colors.white),
+                  
                 ],
               ),
             ],
