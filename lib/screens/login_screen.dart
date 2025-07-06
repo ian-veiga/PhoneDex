@@ -13,34 +13,38 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _hidePassword = true;
 
-  final TextEditingController usernameController = TextEditingController();
+  // --- MODIFICAÇÃO 1: Renomear o controller para refletir o uso de e-mail ---
+  final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
   final AuthService _authService = AuthService();
 
   @override
   void dispose() {
-    usernameController.dispose();
+    // --- MODIFICAÇÃO 2: Atualizar o dispose ---
+    emailController.dispose();
     passwordController.dispose();
     super.dispose();
   }
 
-  Future<void> _loginWithUsername() async {
+  // --- MODIFICAÇÃO 3: Criar a função de login por e-mail ---
+  Future<void> _loginWithEmail() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final username = usernameController.text.trim();
+    final email = emailController.text.trim();
     final password = passwordController.text.trim();
 
     try {
-      final user = await _authService.loginWithUsername(username, password);
+      // Usando o método de login por e-mail do seu AuthService
+      final user = await _authService.login(email, password);
       if (user != null) {
         Navigator.pushReplacementNamed(context, '/home');
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text(
-            'Usuário ou senha inválidos, ou usuário não cadastrado.',
+            'E-mail ou senha inválidos. Verifique suas credenciais.',
           ),
         ),
       );
@@ -75,16 +79,20 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
+                          // --- MODIFICAÇÃO 4: Alterar o campo de Usuário para E-mail ---
                           TextFormField(
-                            controller: usernameController,
+                            controller: emailController, // Usar o controller de e-mail
                             decoration: const InputDecoration(
-                              labelText: 'Usuário',
-                              prefixIcon: Icon(Icons.person),
+                              labelText: 'E-mail', // Mudar o texto
+                              prefixIcon: Icon(Icons.email), // Mudar o ícone
                               border: UnderlineInputBorder(),
                             ),
-                            validator: (val) => val == null || val.isEmpty
-                                ? 'Informe seu usuário'
-                                : null,
+                            validator: (val) { // Adicionar um validador de e-mail
+                              if (val == null || !val.contains('@')) {
+                                return 'Informe um e-mail válido';
+                              }
+                              return null;
+                            },
                           ),
                           const SizedBox(height: 16),
                           TextFormField(
@@ -110,7 +118,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           const SizedBox(height: 32),
                           ElevatedButton(
-                            onPressed: _loginWithUsername,
+                            // --- MODIFICAÇÃO 5: Chamar a função de login correta ---
+                            onPressed: _loginWithEmail,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.blueGrey[800],
                               shape: RoundedRectangleBorder(

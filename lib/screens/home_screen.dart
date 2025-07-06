@@ -3,9 +3,11 @@ import 'package:pphonedex/screens/add_phone_screen.dart';
 import 'package:pphonedex/services/phone_service.dart';
 import 'package:pphonedex/models/phone_model.dart';
 import 'package:pphonedex/components/Phone_card.dart';
-import 'package:pphonedex/components/topbar.dart'; 
+import 'package:pphonedex/components/topbar.dart';
 import 'package:pphonedex/screens/feed_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:pphonedex/services/auth_service.dart';
+import 'package:pphonedex/screens/pending_phones_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -18,17 +20,26 @@ class _HomeScreenState extends State<HomeScreen> {
   String selectedOS = 'Todos';
   String searchQuery = '';
   int currentIndex = 0;
-
   String userId = 'usuario_demo';
 
-   @override
+  final AuthService _authService = AuthService();
+  bool isAdmin = false;
+
+  @override
   void initState() {
     super.initState();
-    // Obtém o usuário atual do Firebase Auth
+    _loadUserStatus();
+  }
+
+  Future<void> _loadUserStatus() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      // Se o usuário estiver logado, atualiza o userId com seu UID
       userId = user.uid;
+      if (mounted) {
+        setState(() {
+          isAdmin = _authService.isAdmin;
+        });
+      }
     }
   }
 
@@ -44,8 +55,68 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void navigateToProfile() {
-    Navigator.pushNamed(context, '/profile');
+  Widget _buildAdminFab(BuildContext context) {
+    return FloatingActionButton(
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const PendingPhonesScreen()),
+        );
+      },
+      backgroundColor: Colors.orangeAccent,
+      tooltip: 'Aprovações Pendentes',
+      child: const Icon(Icons.pending_actions, color: Colors.white),
+    );
+  }
+
+  Widget _buildUserFab(BuildContext context) {
+    return FloatingActionButton(
+      onPressed: () {
+        Navigator.push(context, MaterialPageRoute(builder: (_) => AddPhoneScreen()));
+      },
+      child: const Icon(Icons.add),
+      tooltip: 'Adicionar Celular',
+    );
+  }
+
+  Widget _buildNavIcon(IconData icon, int index) {
+    final isSelected = currentIndex == index;
+    return InkWell(
+      onTap: () {
+        setState(() {
+          currentIndex = index;
+        });
+        if (index == 3) {
+          Navigator.pushNamed(context, '/feed');
+        }
+      },
+      borderRadius: BorderRadius.circular(30),
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        margin: const EdgeInsets.symmetric(horizontal: 6),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: isSelected ? Colors.white : Colors.transparent,
+        ),
+        child: Icon(
+          icon,
+          color: isSelected ? Colors.red : Colors.black,
+          size: 24,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildIndicatorDot(Color color) {
+    return Container(
+      width: 20,
+      height: 20,
+      margin: const EdgeInsets.only(left: 8),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: color,
+      ),
+    );
   }
 
   @override
@@ -77,7 +148,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     return Center(child: Text('Erro: ${snapshot.error}'));
                   }
                   if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Center(child: Text('Nenhum celular encontrado.'));
+                    return const Center(child: Text('Nenhum celular aprovado encontrado.'));
                   }
 
                   final phones = snapshot.data!.where((phone) {
@@ -88,7 +159,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         (selectedOS == 'iOS' && isIOS) ||
                         (selectedOS == 'Android' && !isIOS);
 
-                    final searchMatch = searchQuery.isEmpty || nameLower.contains(searchQuery);
+                    final searchMatch =
+                        searchQuery.isEmpty || nameLower.contains(searchQuery);
 
                     return soMatch && searchMatch;
                   }).toList();
@@ -112,90 +184,33 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => AddPhoneScreen()));
-        },
-        child: const Icon(Icons.add),
-        tooltip: 'Adicionar Celular',
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-       bottomNavigationBar: BottomAppBar(
+      floatingActionButton: isAdmin ? _buildAdminFab(context) : _buildUserFab(context),
+      floatingActionButtonLocation: isAdmin
+          ? FloatingActionButtonLocation.endFloat
+          : FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),
-        color: Colors.red, // Cor do BottomAppBar
+        color: Colors.red,
         child: Container(
-           width: double.infinity,
-           height:double.infinity,
-          decoration: const BoxDecoration(
-            color: Colors.red,
-          ),
+          height: 70,
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          decoration: const BoxDecoration(color: Colors.red),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              IconButton(
-                icon: Icon(
-                  Icons.home,
-                  color: currentIndex == 0 ? Colors.white : Colors.black, // Cor ajustada para contraste
-                ),
-                onPressed: () {
-                  setState(() {
-                    currentIndex = 0;
-                  });
-                },
-              ),
-              IconButton(
-                icon: Icon(
-                  Icons.favorite,
-                  color: currentIndex == 1 ? Colors.white : Colors.black, // Cor ajustada para contraste
-                ),
-                onPressed: () {
-                  setState(() {
-                    currentIndex = 1;
-                  });
-                },
-              ),
-              const SizedBox(width: 40), 
-              IconButton(
-                icon: Icon(
-                  Icons.person,
-                  color: currentIndex == 2 ? Colors.white : Colors.black, // Cor ajustada para contraste
-                ),
-                onPressed: () {
-                  setState(() {
-                    currentIndex = 2;
-                  });
-                  navigateToProfile();
-                },
-              ),
-              IconButton(
-                icon: Icon(
-                  Icons.feed,
-                  color: currentIndex == 3 ? Colors.white : Colors.black, // Cor ajustada para contraste
-                ),
-                onPressed: () {
-                  Navigator.pushNamed(context, '/feed');
-                },
-              ),
+              // Lado esquerdo
               Row(
                 children: [
-                  const SizedBox(width: 16),
-                  Container(
-                    width: 20,
-                    height: 20,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.yellow,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    width: 20,
-                    height: 20,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white,
-                    ),
-                  ),
+                  _buildNavIcon(Icons.home, 0),
+                  _buildNavIcon(Icons.favorite, 1),
+                ],
+              ),
+              // Lado direito
+              Row(
+                children: [
+                  _buildNavIcon(Icons.feed, 3),
+                  _buildIndicatorDot(Colors.yellow),
+                  _buildIndicatorDot(Colors.white),
                 ],
               ),
             ],
@@ -204,5 +219,4 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-  }
-
+}

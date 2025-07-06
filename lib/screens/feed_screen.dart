@@ -32,8 +32,13 @@ class _FeedScreenState extends State<FeedScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Feed de Reviews'),
-        backgroundColor: const Color.fromARGB(255, 173, 76, 76),
+        title: const Text(
+          'Feed',
+          style: TextStyle(color: Colors.black),
+        ),
+        backgroundColor: Colors.grey[200],
+        iconTheme: const IconThemeData(color: Colors.black),
+        elevation: 1,
       ),
       body: StreamBuilder<List<Post>>(
         stream: _postService.getPosts(),
