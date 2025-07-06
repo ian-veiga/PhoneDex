@@ -130,7 +130,7 @@ class _PhoneDetailScreenState extends State<PhoneDetailScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.red,
+        backgroundColor: Colors.grey,
         title: const Text('📱 Detalhes do Celular'),
         centerTitle: true,
       ),

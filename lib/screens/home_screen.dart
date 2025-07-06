@@ -23,25 +23,19 @@ class _HomeScreenState extends State<HomeScreen> {
   String userId = 'usuario_demo';
 
   final AuthService _authService = AuthService();
-  bool isAdmin = false; // Variável de estado local para controlar a UI
+  bool isAdmin = false;
 
   @override
   void initState() {
     super.initState();
-    // --- CORREÇÃO PRINCIPAL ---
-    // A verificação de status agora é feita em uma função separada
-    // para garantir que o estado seja atualizado corretamente.
     _loadUserStatus();
   }
 
-  // Função assíncrona para carregar o status do usuário
   Future<void> _loadUserStatus() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       userId = user.uid;
-      // Acessa o valor do serviço (que foi definido no login)
-      // e atualiza o estado do widget para forçar uma reconstrução da tela.
-      if (mounted) { // Garante que o widget ainda está na tela
+      if (mounted) {
         setState(() {
           isAdmin = _authService.isAdmin;
         });
@@ -59,11 +53,6 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       searchQuery = value.toLowerCase();
     });
-  }
-
-  // CORREÇÃO: A navegação do ícone de perfil estava errada.
-  void navigateToProfile() {
-    Navigator.pushNamed(context, '/profile');
   }
 
   Widget _buildAdminFab(BuildContext context) {
@@ -87,6 +76,46 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       child: const Icon(Icons.add),
       tooltip: 'Adicionar Celular',
+    );
+  }
+
+  Widget _buildNavIcon(IconData icon, int index) {
+    final isSelected = currentIndex == index;
+    return InkWell(
+      onTap: () {
+        setState(() {
+          currentIndex = index;
+        });
+        if (index == 3) {
+          Navigator.pushNamed(context, '/feed');
+        }
+      },
+      borderRadius: BorderRadius.circular(30),
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        margin: const EdgeInsets.symmetric(horizontal: 6),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: isSelected ? Colors.white : Colors.transparent,
+        ),
+        child: Icon(
+          icon,
+          color: isSelected ? Colors.red : Colors.black,
+          size: 24,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildIndicatorDot(Color color) {
+    return Container(
+      width: 20,
+      height: 20,
+      margin: const EdgeInsets.only(left: 8),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: color,
+      ),
     );
   }
 
@@ -119,10 +148,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     return Center(child: Text('Erro: ${snapshot.error}'));
                   }
                   if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    // Mensagem mais clara para o usuário
-                    return const Center(
-                        child: Text(
-                            'Nenhum celular aprovado encontrado.'));
+                    return const Center(child: Text('Nenhum celular aprovado encontrado.'));
                   }
 
                   final phones = snapshot.data!.where((phone) {
@@ -140,8 +166,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   }).toList();
 
                   return GridView.builder(
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 3,
                       crossAxisSpacing: 8,
                       mainAxisSpacing: 8,
@@ -150,8 +175,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     itemCount: phones.length,
                     itemBuilder: (context, index) {
                       final phone = phones[index];
-                      return buildPhoneCard(
-                          phone.name, phone.imageUrl, phone.id, context);
+                      return buildPhoneCard(phone.name, phone.imageUrl, phone.id, context);
                     },
                   );
                 },
@@ -160,8 +184,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      floatingActionButton:
-          isAdmin ? _buildAdminFab(context) : _buildUserFab(context),
+      floatingActionButton: isAdmin ? _buildAdminFab(context) : _buildUserFab(context),
       floatingActionButtonLocation: isAdmin
           ? FloatingActionButtonLocation.endFloat
           : FloatingActionButtonLocation.centerDocked,
@@ -169,78 +192,25 @@ class _HomeScreenState extends State<HomeScreen> {
         shape: const CircularNotchedRectangle(),
         color: Colors.red,
         child: Container(
-          width: double.infinity,
-          height: double.infinity,
-          decoration: const BoxDecoration(
-            color: Colors.red,
-          ),
+          height: 70,
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          decoration: const BoxDecoration(color: Colors.red),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              IconButton(
-                icon: Icon(
-                  Icons.home,
-                  color: currentIndex == 0 ? Colors.white : Colors.black,
-                ),
-                onPressed: () {
-                  setState(() {
-                    currentIndex = 0;
-                  });
-                },
-              ),
-              IconButton(
-                icon: Icon(
-                  Icons.favorite,
-                  color: currentIndex == 1 ? Colors.white : Colors.black,
-                ),
-                onPressed: () {
-                  setState(() {
-                    currentIndex = 1;
-                  });
-                },
-              ),
-              if (!isAdmin) const SizedBox(width: 40),
-              IconButton(
-                icon: Icon(
-                  Icons.person,
-                  color: currentIndex == 2 ? Colors.white : Colors.black,
-                ),
-                onPressed: () {
-                  setState(() {
-                    currentIndex = 2;
-                  });
-                  navigateToProfile();
-                },
-              ),
-              IconButton(
-                icon: Icon(
-                  Icons.feed,
-                  color: currentIndex == 3 ? Colors.white : Colors.black,
-                ),
-                onPressed: () {
-                  Navigator.pushNamed(context, '/feed');
-                },
-              ),
+              // Lado esquerdo
               Row(
                 children: [
-                  const SizedBox(width: 16),
-                  Container(
-                    width: 20,
-                    height: 20,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.yellow,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    width: 20,
-                    height: 20,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white,
-                    ),
-                  ),
+                  _buildNavIcon(Icons.home, 0),
+                  _buildNavIcon(Icons.favorite, 1),
+                ],
+              ),
+              // Lado direito
+              Row(
+                children: [
+                  _buildNavIcon(Icons.feed, 3),
+                  _buildIndicatorDot(Colors.yellow),
+                  _buildIndicatorDot(Colors.white),
                 ],
               ),
             ],
