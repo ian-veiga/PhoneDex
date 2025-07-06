@@ -11,6 +11,7 @@ import 'package:pphonedex/screens/profile_screen.dart';
 import '/core/firebase_config.dart';
 import 'package:pphonedex/screens/feed_screen.dart';
 import 'package:pphonedex/screens/pending_phones_screen.dart'; 
+import 'package:pphonedex/screens/map_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await FirebaseConfig.init();
@@ -43,6 +44,7 @@ class PhoneDexApp extends StatelessWidget {
         },
         '/feed': (_) => const FeedScreen(),
         'pendingPhones': (_) => const PendingPhonesScreen(),
+        '/map': (_) => const MapScreen(),
       },
     );
   }
