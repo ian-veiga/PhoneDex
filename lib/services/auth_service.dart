@@ -54,6 +54,7 @@ class AuthService {
         'username': username,
         'createdAt': FieldValue.serverTimestamp(),
         'isAdmin': false,
+        'photoURL': cred.user!.photoURL ?? '',
       });
     }
     return cred.user;

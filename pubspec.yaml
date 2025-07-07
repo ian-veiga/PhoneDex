@@ -32,6 +32,7 @@ dependencies:
   firebase_auth: ^4.17.4
   cloud_firestore: ^4.15.3
   provider: ^6.1.2
+  firebase_storage: ^11.7.0 
   flutter:
     sdk: flutter
   image_picker: ^1.0.4
