@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pphonedex/models/phone_model.dart';
 import 'package:pphonedex/screens/add_phone_screen.dart';
 import 'package:pphonedex/services/phone_service.dart';
+import 'package:pphonedex/components/bottombar.dart';
 
 class PhoneDetailScreen extends StatefulWidget {
   const PhoneDetailScreen({super.key});
@@ -130,7 +131,7 @@ class _PhoneDetailScreenState extends State<PhoneDetailScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.grey,
+        backgroundColor: Colors.red,
         title: const Text('📱 Detalhes do Celular'),
         centerTitle: true,
       ),
@@ -168,7 +169,7 @@ class _PhoneDetailScreenState extends State<PhoneDetailScreen> {
                       style: const TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: Colors.black,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -312,6 +313,7 @@ class _PhoneDetailScreenState extends State<PhoneDetailScreen> {
           },
         ),
       ),
+       bottomNavigationBar: const CustomBottomBar(),
     );
   }
 

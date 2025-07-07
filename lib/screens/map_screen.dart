@@ -6,6 +6,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:pphonedex/models/store_model.dart';
 import 'package:pphonedex/services/geoapify_service.dart';
+import 'package:pphonedex/components/bottombar.dart'; // Importa o CustomBottomBar
 
 class MapScreen extends StatefulWidget {
   const MapScreen({Key? key}) : super(key: key);
@@ -16,7 +17,7 @@ class MapScreen extends StatefulWidget {
 
 class _MapScreenState extends State<MapScreen> {
   // !! Lembre-se de colocar sua chave de API aqui !!
-  final GeoapifyService _geoapifyService = GeoapifyService('6628cac146e048dc98eb4e09fb926399');
+  final GeoapifyService _geoapifyService = GeoapifyService('def9eff045ea40f09344aaa4a905c06a');
 
   LatLng? _currentPosition;
   List<Store> _nearbyStores = [];
@@ -99,6 +100,7 @@ class _MapScreenState extends State<MapScreen> {
         backgroundColor: Colors.red,
       ),
       body: _buildBody(),
+      bottomNavigationBar: const CustomBottomBar(),
     );
   }
 
@@ -178,5 +180,7 @@ class _MapScreenState extends State<MapScreen> {
     );
 
     return markers;
+
+    
   }
 }
