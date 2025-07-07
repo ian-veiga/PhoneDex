@@ -12,7 +12,7 @@ class GeoapifyService {
   Future<List<Store>> findNearbyStores(double lat, double lon) async {
     // Busca por lojas de celular num raio de 5km (5000 metros)
     final url = Uri.parse(
-        'https://api.geoapify.com/v2/places?categories=adult.casino&filter=circle:$lon,$lat,5000&bias=proximity:$lon,$lat&apiKey=$apiKey');
+        'https://api.geoapify.com/v2/places?categories=commercial.elektronics,commercial.shopping_mall&filter=circle:$lon,$lat,5000&bias=proximity:$lon,$lat&apiKey=$apiKey');
 
     final response = await http.get(url);
 

@@ -63,7 +63,7 @@ class _HomeScreenState extends State<HomeScreen> {
           MaterialPageRoute(builder: (context) => const PendingPhonesScreen()),
         );
       },
-      backgroundColor: Colors.orangeAccent,
+      backgroundColor: Colors.red,
       tooltip: 'Aprovações Pendentes',
       child: const Icon(Icons.pending_actions, color: Colors.white),
     );
@@ -206,23 +206,23 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              _buildNavIcon(Icons.home, 0), // Início
+              _buildNavIcon(Icons.favorite, 1), // Favoritos
+              _buildNavIcon(Icons.map, 2), // Mapa
+              _buildNavIcon(Icons.feed, 3), // Feed 
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildIndicatorDot( Colors.white), 
+                  _buildIndicatorDot( Colors.yellow),
+                ],
+              ),
+              
+              
+               
               // Lado esquerdo
-              Row(
-                children: [
-                  _buildIndicatorDot(Colors.white),
-                  _buildNavIcon(Icons.home, 0),
-                  _buildNavIcon(Icons.favorite, 1),
-                ],
-              ),
-              // Lado direito
-              Row(
-                children: [
-                  _buildNavIcon(Icons.map, 2),
-                  _buildNavIcon(Icons.feed, 3),
-                  _buildIndicatorDot(Colors.yellow),
-                  
-                ],
-              ),
+              
+              
             ],
           ),
         ),

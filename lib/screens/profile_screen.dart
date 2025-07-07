@@ -4,6 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
+import 'package:pphonedex/services/auth_service.dart';
+import 'package:pphonedex/screens/pending_phones_screen.dart';
+import 'package:pphonedex/components/bottombar.dart';
+
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -17,6 +21,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _senhaController = TextEditingController();
 
+  // NOVO: Instância do AuthService e variável de estado para admin
+  final AuthService _authService = AuthService();
+  bool isAdmin = false;
+
   String? photoUrl;
   File? selectedImage;
   bool showPassword = false;
@@ -28,6 +36,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _loadUserData();
   }
 
+  
   Future<void> _loadUserData() async {
     final user = _auth.currentUser;
     if (user != null) {
@@ -35,9 +44,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
       photoUrl = user.photoURL;
 
       final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
-      setState(() {
-        username = doc.data()?['username'] ?? 'Perfil do Usuário';
-      });
+      
+      // Garante que a UI seja reconstruída com as informações corretas
+      if(mounted) {
+        setState(() {
+          username = doc.data()?['username'] ?? 'Perfil do Usuário';
+          isAdmin = _authService.isAdmin; // Pega o status do serviço
+        });
+      }
     }
   }
 
@@ -94,13 +108,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
         : (photoUrl != null
             ? NetworkImage(photoUrl!)
             : const AssetImage("assets/images/img_perfil.png") as ImageProvider);
+            
 
     return Scaffold(
       extendBodyBehindAppBar: true,
       backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: Text(username ?? "Perfil do Usuário"),
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.red,
         elevation: 0,
         foregroundColor: Colors.white,
       ),
@@ -108,11 +123,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         width: double.infinity,
         height: double.infinity,
         decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFFFF8A80), Color(0xFFFFCDD2)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
+        color: Color(0xFFF0F8FF)
         ),
         child: SafeArea(
           child: SingleChildScrollView(
@@ -187,6 +198,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
                 const SizedBox(height: 40),
+                if (isAdmin)
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      icon: const Icon(Icons.pending_actions),
+                      label: const Text('Aprovações Pendentes'),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const PendingPhonesScreen()),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                    ),
+                  ),
+                if (isAdmin) const SizedBox(height: 16), // Espaçamento
+                
+                
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -213,6 +249,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
       ),
+      bottomNavigationBar: const CustomBottomBar(),
     );
   }
 }

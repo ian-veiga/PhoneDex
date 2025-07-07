@@ -1,10 +1,11 @@
-// feed_screen.dart
+// lib/screens/feed_screen.dart
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pphonedex/models/post_model.dart';
 import 'package:pphonedex/services/post_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
+import 'package:pphonedex/components/bottombar.dart';
 
 class FeedScreen extends StatefulWidget {
   const FeedScreen({super.key});
@@ -21,6 +22,7 @@ class _FeedScreenState extends State<FeedScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: Colors.white, // Fundo branco para o modal
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -31,14 +33,11 @@ class _FeedScreenState extends State<FeedScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // Fundo da tela consistente com as outras
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text(
-          'Feed',
-          style: TextStyle(color: Colors.black),
-        ),
-        backgroundColor: Colors.grey[200],
-        iconTheme: const IconThemeData(color: Colors.black),
-        elevation: 1,
+        // O título e a cor agora vêm do ThemeData em main.dart
+        title: const Text('Feed de Reviews'),
       ),
       body: StreamBuilder<List<Post>>(
         stream: _postService.getPosts(),
@@ -50,12 +49,18 @@ class _FeedScreenState extends State<FeedScreen> {
             return Center(child: Text('Erro: ${snapshot.error}'));
           }
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('Nenhuma publicação encontrada.'));
+            return const Center(
+              child: Text(
+                'Nenhuma publicação encontrada.',
+                style: TextStyle(fontSize: 16, color: Colors.black54),
+              ),
+            );
           }
 
           final posts = snapshot.data!;
 
           return ListView.builder(
+            padding: const EdgeInsets.symmetric(vertical: 8),
             itemCount: posts.length,
             itemBuilder: (context, index) {
               final post = posts[index];
@@ -70,9 +75,12 @@ class _FeedScreenState extends State<FeedScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _openCreatePostModal,
-        child: const Icon(Icons.add_comment),
         tooltip: 'Criar nova postagem',
+        // Estilo já vem do tema, mas podemos garantir o ícone
+        child: const Icon(Icons.add_comment),
       ),
+      // Adicionando a CustomBottomBar
+      bottomNavigationBar: const CustomBottomBar(),
     );
   }
 }
@@ -142,9 +150,11 @@ class _CreatePostModalState extends State<CreatePostModal> {
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
             widget.existingPost != null ? 'Editar Postagem' : 'Nova Postagem',
+            textAlign: TextAlign.center,
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
@@ -152,32 +162,39 @@ class _CreatePostModalState extends State<CreatePostModal> {
             controller: _phoneController,
             decoration: const InputDecoration(
               labelText: 'Nome do celular (opcional)',
-              border: UnderlineInputBorder(),
+              border: OutlineInputBorder(),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           TextField(
             controller: _textController,
             maxLines: 3,
-            decoration: const InputDecoration(labelText: 'Escreva um review ou comentário'),
+            decoration: const InputDecoration(
+              labelText: 'Escreva um review ou comentário',
+              border: OutlineInputBorder(),
+              alignLabelWithHint: true,
+            ),
           ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: _linkController,
-            decoration: const InputDecoration(labelText: 'Link de celular ou notícia (opcional)'),
-          ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(5, (index) => IconButton(
               icon: Icon(
                 _rating > index ? Icons.star : Icons.star_border,
                 color: Colors.amber,
+                size: 30,
               ),
               onPressed: () => setState(() => _rating = index + 1),
             )),
           ),
+          const SizedBox(height: 12),
           ElevatedButton(
             onPressed: _submitPost,
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              backgroundColor: Theme.of(context).primaryColor,
+              foregroundColor: Colors.white,
+            ),
             child: Text(widget.existingPost != null ? 'Atualizar' : 'Publicar'),
           ),
         ],
@@ -237,13 +254,16 @@ class _PostCardState extends State<PostCard> {
         .add(comment);
 
     _commentController.clear();
+    FocusScope.of(context).unfocus(); // Esconde o teclado
     setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: Padding(
         padding: const EdgeInsets.all(12.0),
         child: Column(
@@ -257,17 +277,26 @@ class _PostCardState extends State<PostCard> {
                       : null,
                   child: widget.post.userPhotoUrl.isEmpty ? const Icon(Icons.person) : null,
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 12),
                 Expanded(
-                  child: Text(widget.post.userName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(widget.post.userName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                      if (widget.post.phoneName.isNotEmpty)
+                        Text('Avaliou: ${widget.post.phoneName}', style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+                    ],
+                  ),
                 ),
                 if (widget.isOwner) ...[
                   IconButton(
-                    icon: const Icon(Icons.edit, color: Colors.blue),
+                    icon: const Icon(Icons.edit, color: Colors.blueAccent),
                     onPressed: widget.onEdit,
+                    tooltip: 'Editar',
                   ),
                   IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
+                    icon: const Icon(Icons.delete, color: Colors.redAccent),
+                    tooltip: 'Excluir',
                     onPressed: () async {
                       await FirebaseFirestore.instance.collection('posts').doc(widget.post.id).delete();
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -278,8 +307,7 @@ class _PostCardState extends State<PostCard> {
                 ]
               ],
             ),
-            if (widget.post.phoneName.isNotEmpty)
-              Text('Avaliou ${widget.post.phoneName}', style: const TextStyle(color: Colors.grey)),
+            const SizedBox(height: 8),
             if (widget.post.rating > 0)
               Row(
                 children: List.generate(5, (index) => Icon(
@@ -290,13 +318,9 @@ class _PostCardState extends State<PostCard> {
               ),
             if (widget.post.text.isNotEmpty) ...[
               const SizedBox(height: 8),
-              Text(widget.post.text),
+              Text(widget.post.text, style: const TextStyle(fontSize: 15)),
             ],
-            if (widget.post.link.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Text(widget.post.link, style: const TextStyle(color: Colors.blue)),
-            ],
-            const Divider(),
+            const Divider(height: 24),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -304,39 +328,50 @@ class _PostCardState extends State<PostCard> {
                 IconButton(
                   icon: Icon(
                     isLiked ? Icons.thumb_up : Icons.thumb_up_alt_outlined,
+                    color: isLiked ? Theme.of(context).colorScheme.secondary : Colors.grey,
                   ),
                   onPressed: _toggleLike,
                 ),
               ],
             ),
-            const Divider(),
+            // Seção de Comentários
             StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
                   .collection('posts')
                   .doc(widget.post.id)
                   .collection('comments')
                   .orderBy('createdAt', descending: true)
+                  .limit(2) // Limita a 2 comentários para não poluir
                   .snapshots(),
               builder: (context, snapshot) {
-                if (!snapshot.hasData) return const SizedBox();
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) return const SizedBox();
                 return Column(
-                  children: snapshot.data!.docs.map((doc) {
-                    final data = doc.data() as Map<String, dynamic>;
-                    return ListTile(
-                      dense: true,
-                      title: Text(data['userName'] ?? 'Anônimo'),
-                      subtitle: Text(data['text'] ?? ''),
-                    );
-                  }).toList(),
+                  children: [
+                    const Divider(),
+                    ...snapshot.data!.docs.map((doc) {
+                      final data = doc.data() as Map<String, dynamic>;
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4.0),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("${data['userName'] ?? 'Anônimo'}: ", style: const TextStyle(fontWeight: FontWeight.bold)),
+                            Expanded(child: Text(data['text'] ?? '')),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ],
                 );
               },
             ),
+            const Divider(),
             Row(
               children: [
                 Expanded(
                   child: TextField(
                     controller: _commentController,
-                    decoration: const InputDecoration(hintText: 'Comentar...'),
+                    decoration: const InputDecoration.collapsed(hintText: 'Adicionar um comentário...'),
                   ),
                 ),
                 IconButton(

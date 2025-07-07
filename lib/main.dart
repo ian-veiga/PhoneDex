@@ -26,9 +26,43 @@ class PhoneDexApp extends StatelessWidget {
     return MaterialApp(
       title: 'PhoneDex',
       theme: ThemeData(
+      // Paleta de Cores Principal
+      primaryColor: const Color(0xFFCC0000), // Vermelho Pokédex
+      scaffoldBackgroundColor: const Color(0xFFEAEAEA), // Fundo de tela neutro e claro
+      // Cor de destaque para botões e elementos interativos
+      colorScheme: ColorScheme.fromSwatch(
         primarySwatch: Colors.red,
-        scaffoldBackgroundColor: const Color(0xFFD0D0D0),
+      ).copyWith(
+        secondary: const Color(0xFF3B4CCA), // Azul para botões/links
       ),
+
+      // Estilo da AppBar
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.red, // Vermelho Pokédex
+        elevation: 4, // Sombra sutil
+        titleTextStyle: TextStyle(
+          fontFamily: 'Roboto', // Use uma fonte consistente
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
+        iconTheme: IconThemeData(
+          color: Colors.white, // Ícones brancos na AppBar
+        ),
+      ),
+
+      // Estilo para FloatingActionButtons
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: Color(0xFF3B4CCA), // Azul
+        foregroundColor: Colors.white,
+      ),
+
+      // Estilo dos Textos
+      textTheme: const TextTheme(
+        bodyMedium: TextStyle(color: Color(0xFF1F1F1F)), // Texto principal escuro
+        headlineLarge: TextStyle(fontWeight: FontWeight.bold),
+      ),
+    ),
       initialRoute: '/',
       routes: {
         '/': (_) => const SplashScreen(),
