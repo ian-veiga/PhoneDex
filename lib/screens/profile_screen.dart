@@ -204,6 +204,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             if (isAdmin) _buildAdminButton(),
                             if (isAdmin) const SizedBox(height: 12),
                             _buildSaveChangesButton(),
+                            
+                            // BOTÃO DE SAIR IMPLEMENTADO AQUI
+                            const SizedBox(height: 16),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: () async {
+                                  await FirebaseAuth.instance.signOut();
+                                  if (!mounted) return;
+                                  Navigator.pushReplacementNamed(context, '/login');
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                                ),
+                                child: const Text("Sair", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -424,6 +444,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       }
                                     },
                                   ),
+                                  
                                 ],
                               )
                             : null,
