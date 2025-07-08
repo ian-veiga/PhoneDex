@@ -7,6 +7,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../models/phone_model.dart';
 import '../services/phone_service.dart';
 import 'add_phone_screen.dart';
+import 'login_screen.dart'; // Certifique-se de importar a tela de login
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -154,17 +155,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 40),
                 if (userId != null) ...[
                   _buildPhoneSection(
-                  "Celulares Aprovados",
-                  _phoneService.getPhones(),
-                  showActions: false,
-                  minHeight: 180,
+                    "Celulares Aprovados",
+                    _phoneService.getPhones(),
+                    showActions: false,
+                    minHeight: 180,
                   ),
                   const SizedBox(height: 24),
                   _buildPhoneSection(
-                  "Celulares Pendentes",
-                  _phoneService.getPendingPhones(),
-                  showActions: true,
-                  minHeight: 180,
+                    "Celulares Pendentes",
+                    _phoneService.getPendingPhones(),
+                    showActions: true,
+                    minHeight: 180,
                   ),
                 ],
                 const SizedBox(height: 40),
@@ -179,6 +180,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                     ),
                     child: const Text("Salvar Alterações", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      await FirebaseAuth.instance.signOut();
+                      if (!mounted) return;
+                      Navigator.pushReplacementNamed(context, '/login');
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                    ),
+                    child: const Text("Sair", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   ),
                 ),
               ],
@@ -322,5 +341,4 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
-} 
-// This code defines a ProfileScreen widget that allows users to view and edit their profile information, including email, password, and phone details. It uses Firebase for authentication and Firestore for data storage. The screen includes functionality to update the profile, pick a new profile image, and display lists of approved and pending phones associated with the user. The UI is designed with a gradient background and includes various input fields and buttons for user interaction.
+}
