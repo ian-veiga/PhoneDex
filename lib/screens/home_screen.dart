@@ -63,10 +63,12 @@ class _HomeScreenState extends State<HomeScreen> {
           MaterialPageRoute(builder: (context) => const PendingPhonesScreen()),
         );
       },
+      
       backgroundColor: Colors.red,
       tooltip: 'Aprovações Pendentes',
       child: const Icon(Icons.pending_actions, color: Colors.white),
     );
+    
   }
 
   Widget _buildUserFab(BuildContext context) {
@@ -192,7 +194,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      floatingActionButton: isAdmin ? _buildAdminFab(context) : _buildUserFab(context),
+      floatingActionButton: isAdmin ? Column(mainAxisSize: MainAxisSize.min,crossAxisAlignment: CrossAxisAlignment.end,children: [_buildAdminFab(context),const SizedBox(height: 16,),_buildUserFab(context)],): _buildUserFab(context),
       floatingActionButtonLocation: isAdmin
           ? FloatingActionButtonLocation.endFloat
           : FloatingActionButtonLocation.centerDocked,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:pphonedex/components/bottombar.dart';
 import 'comparison_screen.dart';
 
 class SelectOpponentScreen extends StatelessWidget {
@@ -10,69 +11,64 @@ class SelectOpponentScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // Fundo e AppBar alinhados com o tema do app
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Color(0xFFFF8A80),
-        title: const Text('Selecione o oponente para VS'),
+        title: const Text('Selecione o Oponente'),
         centerTitle: true,
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFFFF8A80), Color(0xFFFFCDD2)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: StreamBuilder<QuerySnapshot>(
-          stream: FirebaseFirestore.instance.collection('phones').snapshots(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
+      body: StreamBuilder<QuerySnapshot>(
+        // MODIFICAÇÃO: Busca apenas celulares com status 'approved'
+        stream: FirebaseFirestore.instance
+            .collection('phones')
+            .where('status', isEqualTo: 'approved')
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-            if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-              return const Center(child: Text('Nenhum celular encontrado.'));
-            }
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Center(child: Text('Nenhum celular encontrado.'));
+          }
 
-            final phones = snapshot.data!.docs.where((doc) => doc.id != firstPhoneId).toList();
+          // Filtra o celular já selecionado para não aparecer na lista de oponentes
+          final phones =
+              snapshot.data!.docs.where((doc) => doc.id != firstPhoneId).toList();
 
-            if (phones.isEmpty) {
-              return const Center(child: Text('Nenhum outro celular disponível para comparar.'));
-            }
+          if (phones.isEmpty) {
+            return const Center(
+                child: Text('Nenhum outro celular disponível para comparar.'));
+          }
 
-            return ListView.builder(
-              padding: const EdgeInsets.all(12),
-              itemCount: phones.length,
-              itemBuilder: (context, index) {
-                final doc = phones[index];
-                final data = doc.data() as Map<String, dynamic>;
+          return ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: phones.length,
+            itemBuilder: (context, index) {
+              final doc = phones[index];
+              final data = doc.data() as Map<String, dynamic>;
 
-                return GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ComparisonScreen(
-                          firstPhoneId: firstPhoneId,
-                          secondPhoneId: doc.id,
-                        ),
+              // O item da lista já parece um card, mantendo o estilo
+              return GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ComparisonScreen(
+                        firstPhoneId: firstPhoneId,
+                        secondPhoneId: doc.id,
                       ),
-                    );
-                  },
-                  child: Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 6,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
                     ),
+                  );
+                },
+                child: Card(
+                  elevation: 2,
+                  margin: const EdgeInsets.only(bottom: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
                     child: Row(
                       children: [
                         ClipRRect(
@@ -85,8 +81,9 @@ class SelectOpponentScreen extends StatelessWidget {
                             errorBuilder: (_, __, ___) => Container(
                               width: 60,
                               height: 60,
-                              color: Colors.grey.shade300,
-                              child: const Icon(Icons.image_not_supported, color: Colors.grey),
+                              color: Colors.grey.shade200,
+                              child: const Icon(Icons.image_not_supported,
+                                  color: Colors.grey),
                             ),
                           ),
                         ),
@@ -100,16 +97,19 @@ class SelectOpponentScreen extends StatelessWidget {
                             ),
                           ),
                         ),
-                        const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+                        const Icon(Icons.arrow_forward_ios,
+                            size: 16, color: Colors.grey),
                       ],
                     ),
                   ),
-                );
-              },
-            );
-          },
-        ),
+                ),
+              );
+            },
+          );
+        },
       ),
+      // Adiciona a barra inferior para consistência
+      bottomNavigationBar: const CustomBottomBar(),
     );
   }
 }
