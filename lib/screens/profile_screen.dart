@@ -323,3 +323,4 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 } 
+// This code defines a ProfileScreen widget that allows users to view and edit their profile information, including email, password, and phone details. It uses Firebase for authentication and Firestore for data storage. The screen includes functionality to update the profile, pick a new profile image, and display lists of approved and pending phones associated with the user. The UI is designed with a gradient background and includes various input fields and buttons for user interaction.
