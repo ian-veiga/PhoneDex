@@ -1,12 +1,13 @@
-import 'package:firebase_auth/firebase_auth.dart'; // IMPORTAR
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:pphonedex/components/bottombar.dart';
 import '../models/phone_model.dart';
 import '../services/phone_service.dart';
 
 class AddPhoneScreen extends StatefulWidget {
-  final Phone? phoneToEdit; // Adicionar para edição
+  final Phone? phoneToEdit;
 
-  const AddPhoneScreen({super.key, this.phoneToEdit}); // Modificar construtor
+  const AddPhoneScreen({super.key, this.phoneToEdit});
 
   @override
   State<AddPhoneScreen> createState() => _AddPhoneScreenState();
@@ -25,12 +26,12 @@ class _AddPhoneScreenState extends State<AddPhoneScreen> {
   final _screenSizeController = TextEditingController();
 
   final _service = PhoneService();
-  bool get isEditing => widget.phoneToEdit != null; // NOVO
+  bool get isEditing => widget.phoneToEdit != null;
 
   @override
   void initState() {
     super.initState();
-    if (isEditing) { // NOVO
+    if (isEditing) {
       final phone = widget.phoneToEdit!;
       _nameController.text = phone.name;
       _imageUrlController.text = phone.imageUrl;
@@ -47,122 +48,120 @@ class _AddPhoneScreenState extends State<AddPhoneScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // Fundo cinza, conforme o tema do app
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text(isEditing ? 'Editar Celular' : 'Adicionar Celular'), // MODIFICADO
-        backgroundColor: const Color(0xFFFF8A80),
-        elevation: 0,
+        // O título e a cor são definidos pelo tema global em main.dart
+        title: Text(isEditing ? 'Editar Celular' : 'Adicionar Celular'),
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFFFF8A80), Color(0xFFFFCDD2)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  Container(
-                    margin: const EdgeInsets.only(bottom: 24),
-                    child: Icon(
-                      isEditing ? Icons.edit : Icons.add_circle, // MODIFICADO
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          // Formulário dentro de um Card para se destacar no fundo cinza
+          child: Card(
+            elevation: 4,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Ícone com a cor primária do tema
+                    Icon(
+                      isEditing ? Icons.edit_note : Icons.add_circle_outline,
                       size: 60,
-                      color: Colors.white,
+                      color: Theme.of(context).primaryColor,
                     ),
-                  ),
-                  buildTextField(_nameController, 'Nome', Icons.smartphone),
-                  buildTextField(_imageUrlController, 'URL da Imagem', Icons.image),
-                  buildTextField(_ramController, 'Memória RAM', Icons.memory),
-                  buildTextField(_cameraController, 'Megapixel da Câmera', Icons.camera),
-                  buildTextField(_storageController, 'Armazenamento', Icons.sd_storage),
-                  buildTextField(_processorController, 'Processador', Icons.precision_manufacturing),
-                  buildTextField(_batteryController, 'Bateria', Icons.battery_charging_full),
-                  buildTextField(_colorsController, 'Cores', Icons.color_lens),
-                  buildTextField(_screenSizeController, 'Tamanho da Tela', Icons.straighten),
-                  const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () async {
-  if (!_formKey.currentState!.validate()) {
-    return; // Não faz nada se o formulário for inválido
-  }
+                    const SizedBox(height: 24),
+                    buildTextField(_nameController, 'Nome', Icons.smartphone),
+                    buildTextField(_imageUrlController, 'URL da Imagem', Icons.image),
+                    buildTextField(_ramController, 'Memória RAM', Icons.memory),
+                    buildTextField(_cameraController, 'Megapixel da Câmera', Icons.camera_alt),
+                    buildTextField(_storageController, 'Armazenamento', Icons.sd_storage),
+                    buildTextField(_processorController, 'Processador', Icons.precision_manufacturing),
+                    buildTextField(_batteryController, 'Bateria (mAh)', Icons.battery_charging_full),
+                    buildTextField(_colorsController, 'Cores', Icons.color_lens),
+                    buildTextField(_screenSizeController, 'Tamanho da Tela (polegadas)', Icons.straighten),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          if (!_formKey.currentState!.validate()) {
+                            return;
+                          }
 
-  final user = FirebaseAuth.instance.currentUser;
-  if (user == null) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Você precisa estar logado para realizar esta ação.')),
-    );
-    return;
-  }
+                          final user = FirebaseAuth.instance.currentUser;
+                          if (user == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Você precisa estar logado para realizar esta ação.')),
+                            );
+                            return;
+                          }
 
-  // --- INÍCIO DA MODIFICAÇÃO: Adicionando o try/catch ---
-  try {
-    // Monta o objeto Phone
-    final phone = Phone(
-      id: isEditing ? widget.phoneToEdit!.id : DateTime.now().millisecondsSinceEpoch.toString(),
-      name: _nameController.text,
-      imageUrl: _imageUrlController.text,
-      ram: _ramController.text,
-      camera: _cameraController.text,
-      storage: _storageController.text,
-      processor: _processorController.text,
-      battery: _batteryController.text,
-      colors: _colorsController.text,
-      screenSize: _screenSizeController.text,
-      userId: user.uid,
-      status: 'pending', // Garante que o status é 'pending'
-    );
+                          try {
+                            final phone = Phone(
+                              id: isEditing ? widget.phoneToEdit!.id : DateTime.now().millisecondsSinceEpoch.toString(),
+                              name: _nameController.text,
+                              imageUrl: _imageUrlController.text,
+                              ram: _ramController.text,
+                              camera: _cameraController.text,
+                              storage: _storageController.text,
+                              processor: _processorController.text,
+                              battery: _batteryController.text,
+                              colors: _colorsController.text,
+                              screenSize: _screenSizeController.text,
+                              userId: user.uid,
+                              status: 'pending',
+                            );
 
-    // Tenta adicionar o celular ao banco de dados
-    if (isEditing) {
-      await _service.updatePhone(phone);
-    } else {
-      await _service.addPhone(phone);
-    }
+                            if (isEditing) {
+                              await _service.updatePhone(phone);
+                            } else {
+                              await _service.addPhone(phone);
+                            }
 
-    // Se a operação for bem-sucedida, mostra a mensagem de sucesso e volta
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Celular enviado para aprovação!')),
-    );
-    Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(isEditing ? 'Celular atualizado com sucesso!' : 'Celular enviado para aprovação!')),
+                            );
+                            Navigator.pop(context);
 
-  } catch (e) {
-    // Se ocorrer um erro, ele será capturado aqui
-    // e exibido em uma SnackBar para depuração.
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Erro ao salvar: ${e.toString()}')),
-    );
-  }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.redAccent,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Erro ao salvar: ${e.toString()}')),
+                            );
+                          }
+                        },
+                        // Estilo do botão alinhado com o tema
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(context).colorScheme.secondary,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Text(
+                          isEditing ? 'Salvar Alterações' : 'Adicionar Celular',
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                       ),
-                      child: Text(
-                        isEditing ? 'Salvar Alterações' : 'Adicionar Celular', // MODIFICADO
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  )
-                ],
+                    )
+                  ],
+                ),
               ),
             ),
           ),
         ),
       ),
+      // Barra de navegação inferior
+      bottomNavigationBar: const CustomBottomBar(),
     );
   }
 
+  // Widget para criar os campos de texto com estilo padronizado
   Widget buildTextField(TextEditingController controller, String label, IconData icon) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
@@ -170,10 +169,10 @@ class _AddPhoneScreenState extends State<AddPhoneScreen> {
         controller: controller,
         decoration: InputDecoration(
           labelText: label,
-          prefixIcon: Icon(icon),
+          prefixIcon: Icon(icon, color: Theme.of(context).primaryColor),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           filled: true,
-          fillColor: Colors.white.withOpacity(0.95),
+          fillColor: Colors.grey[100],
         ),
         validator: (value) {
           if (value == null || value.isEmpty) {
